@@ -1,0 +1,20 @@
+{
+  "name": "Advocate Arunabh Banerjee - Legal Chambers & Admin",
+  "short_name": "Arunabh Law",
+  "description": "Official Chamber Portal & Client Management System of Advocate Arunabh Banerjee, Supreme Court Advocate",
+  "start_url": "/admin",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#07080c",
+  "theme_color": "#07080c",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

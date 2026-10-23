@@ -59,17 +59,17 @@ export const DEFAULT_CMS_CONFIG: SiteCMSConfig = {
     downloadVcardText: "Save Contact (vCard)"
   },
   hero: {
-    tagline: "CONSTITUTIONAL JUSTICE & HUMAN RIGHTS",
-    titlePrefix: "ADVOCATE",
-    name: "ARUNABH BANERJEE",
-    roleBadge: "SUPREME COURT ADVOCATE",
-    secondaryBadge: "PRESIDENT CPDR",
-    courtLine: "Hon'ble Supreme Court of India & Delhi High Court",
+    tagline: "Senior Counsel",
+    titlePrefix: "Advocate",
+    name: "Arunabh Banerjee",
+    roleBadge: "Supreme Court Advocate",
+    secondaryBadge: "Senior Counsel",
+    courtLine: "Supreme Court of India & Delhi High Court",
     humanRightsLine: "President – C.P.D.R India Human Rights, Delhi",
-    bioText: "Litigating and representing sensitive trials in criminal trials, bail jurisprudence, high-stake corporate disputes, domestic issues, and defending constitutional liberties before the Honourable High Courts and Supreme Court on urgent listings.",
+    bioText: "Legal consultation and representation across criminal, matrimonial, commercial, constitutional, and human rights matters.",
     portraitUrl: "",
     yearsExperience: "15+ YEARS",
-    experienceText: "Academic Teaching & Active Advocacy"
+    experienceText: "Senior Advocacy Practice"
   },
   leadership: {
     sectionTitle: "Human Rights & Civil Defense",
@@ -193,6 +193,8 @@ class CMSService {
   private firebaseApp: FirebaseApp | null = null;
   private firestoreDb: Firestore | null = null;
 
+  private syncEventSource: EventSource | null = null;
+
   constructor() {
     this.config = this.loadConfig();
     this.leads = this.loadLeads();
@@ -200,6 +202,7 @@ class CMSService {
     this.applyTheme(this.config.theme);
     this.applySEO(this.config.seo);
     this.initFirebaseIfEnabled();
+    this.initCloudLeadsSync();
   }
 
   // --- CONFIG MANAGEMENT ---
@@ -364,6 +367,123 @@ class CMSService {
     };
   }
 
+  private readonly SYNC_TOPIC = "arunabh_chamber_leads_2026";
+
+  private async initCloudLeadsSync() {
+    if (typeof window === "undefined") return;
+
+    // 1. Fetch recent leads from cloud pub-sub cache (since 7 days)
+    try {
+      const res = await fetch(`https://ntfy.sh/${this.SYNC_TOPIC}/json?poll=1&since=7d`);
+      if (res.ok) {
+        const text = await res.text();
+        const lines = text.trim().split("\n");
+        let updated = false;
+
+        for (const line of lines) {
+          if (!line) continue;
+          try {
+            const parsed = JSON.parse(line);
+            if (parsed.event === "message" && parsed.message) {
+              const leadObj = JSON.parse(parsed.message);
+              if (leadObj && leadObj.id && !this.leads.some(l => l.id === leadObj.id)) {
+                this.leads.unshift(leadObj);
+                updated = true;
+              }
+            }
+          } catch (e) {}
+        }
+
+        if (updated) {
+          localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(this.leads));
+          this.notifyLeadsSubscribers();
+        }
+      }
+    } catch (e) {
+      console.warn("Could not poll cloud leads", e);
+    }
+
+    // 2. Open live Server-Sent Events stream for real-time notifications
+    try {
+      if (typeof EventSource !== "undefined") {
+        if (this.syncEventSource) {
+          this.syncEventSource.close();
+        }
+        this.syncEventSource = new EventSource(`https://ntfy.sh/${this.SYNC_TOPIC}/sse`);
+        this.syncEventSource.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data && data.event === "message" && data.message) {
+              const incomingLead = JSON.parse(data.message);
+              if (incomingLead && incomingLead.id && !this.leads.some(l => l.id === incomingLead.id)) {
+                this.leads.unshift(incomingLead);
+                localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(this.leads));
+                this.notifyLeadsSubscribers();
+
+                // Trigger audio chime and browser notification
+                this.playNotificationChime();
+                this.sendBrowserNotification(
+                  "⚖️ New Consultation Booking!",
+                  `${incomingLead.name} (${incomingLead.phone}) • ${incomingLead.caseType}`
+                );
+              }
+            }
+          } catch (e) {}
+        };
+      }
+    } catch (e) {
+      console.warn("SSE cloud stream setup error:", e);
+    }
+  }
+
+  public async requestNotificationPermission(): Promise<boolean> {
+    if (typeof window === "undefined" || !("Notification" in window)) return false;
+    try {
+      const perm = await Notification.requestPermission();
+      return perm === "granted";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public hasNotificationPermission(): boolean {
+    if (typeof window === "undefined" || !("Notification" in window)) return false;
+    return Notification.permission === "granted";
+  }
+
+  public sendBrowserNotification(title: string, body: string) {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (Notification.permission === "granted") {
+      try {
+        new Notification(title, {
+          body,
+          icon: "/favicon.svg",
+          badge: "/favicon.svg"
+        });
+      } catch (e) {}
+    }
+  }
+
+  public playNotificationChime() {
+    if (typeof window === "undefined") return;
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.35);
+    } catch (e) {}
+  }
+
   public async addLead(leadData: Omit<LeadItem, "id" | "createdAt" | "status">): Promise<LeadItem> {
     const newLead: LeadItem = {
       ...leadData,
@@ -375,6 +495,20 @@ class CMSService {
     this.leads = [newLead, ...this.leads];
     localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(this.leads));
     this.notifyLeadsSubscribers();
+
+    // Broadcast to cloud pub-sub so all devices & PWA admin receive it immediately
+    try {
+      fetch(`https://ntfy.sh/${this.SYNC_TOPIC}`, {
+        method: "POST",
+        headers: {
+          "Title": `⚖️ New Booking: ${newLead.name}`,
+          "Priority": "high",
+          "Tags": "briefcase,balance_scale",
+          "Click": "https://arunabhbanerjee.com/admin"
+        },
+        body: JSON.stringify(newLead)
+      }).catch(err => console.warn("ntfy broadcast error:", err));
+    } catch (e) {}
 
     // Sync to Firestore if enabled
     if (this.firestoreDb && this.config.firebase?.enabled) {

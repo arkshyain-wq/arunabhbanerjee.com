@@ -31,11 +31,12 @@
     <meta name="googlebot" content="index, follow" />
     <link rel="canonical" href="https://arunabhbanerjee.com/" />
 
-    <!-- Favicon & Brand Icons -->
+    <!-- Favicon & Brand Icons & PWA Manifest -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
-    <meta name="theme-color" content="#0b0d14" />
-    <meta name="msapplication-TileColor" content="#0b0d14" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#07080c" />
+    <meta name="msapplication-TileColor" content="#07080c" />
 
     <!-- Open Graph / Facebook / LinkedIn / WhatsApp Preview -->
     <meta property="og:type" content="website" />
@@ -157,5 +158,14 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js').catch(function(err) {
+            console.log('SW registration error:', err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>

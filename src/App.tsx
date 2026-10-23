@@ -29,6 +29,7 @@ import { LeadItem } from "./types/cms";
 export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [config, setConfig] = useState<SiteCMSConfig>(cmsService.getConfig());
 
   // Form State: Manual case subject entry, no time slots
   const [formData, setFormData] = useState({
@@ -74,6 +75,11 @@ export default function App() {
     window.addEventListener("hashchange", checkAdminRoute);
     window.addEventListener("popstate", checkAdminRoute);
 
+    // Subscribe to real-time CMS configuration updates
+    const unsubConfig = cmsService.subscribeConfig((newConfig) => {
+      setConfig(newConfig);
+    });
+
     // Initialize default appointment date to tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -82,6 +88,12 @@ export default function App() {
       ...prev,
       date: prev.date || tomorrowStr
     }));
+
+    return () => {
+      window.removeEventListener("hashchange", checkAdminRoute);
+      window.removeEventListener("popstate", checkAdminRoute);
+      unsubConfig();
+    };
 
     // Keyboard shortcut for chamber portal: Ctrl + Shift + A
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -203,10 +215,10 @@ export default function App() {
             className="flex flex-col group focus:outline-none"
           >
             <span className="font-serif text-lg sm:text-xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#f5d77f] via-[#d4af37] to-[#997a2e] group-hover:brightness-110 transition-all">
-              Advocate Arunabh Banerjee
+              {config.hero?.titlePrefix ? `${config.hero.titlePrefix} ` : ""}{config.hero?.name || "Advocate Arunabh Banerjee"}
             </span>
             <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.22em] text-[#d4af37]/85 font-medium font-sans">
-              Supreme Court Advocate
+              {config.hero?.roleBadge || "Supreme Court Advocate"}
             </span>
           </a>
 
@@ -290,26 +302,26 @@ export default function App() {
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#d4af37]/35 bg-[#121520]/80">
                 <Scale className="w-3.5 h-3.5 text-[#d4af37]" />
                 <span className="text-[11px] font-medium tracking-widest uppercase text-[#d4af37]">
-                  Supreme Court of India &amp; Delhi High Court
+                  {config.hero?.courtLine || "Supreme Court of India & Delhi High Court"}
                 </span>
               </div>
 
               {/* Name & Title */}
               <div className="space-y-1.5">
                 <span className="text-xs sm:text-sm uppercase tracking-[0.25em] text-gray-400 font-semibold block">
-                  Senior Counsel
+                  {config.hero?.tagline || "Senior Counsel"}
                 </span>
                 <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#f5d77f] via-[#d4af37] to-[#997a2e] leading-[1.1]">
-                  Arunabh Banerjee
+                  {config.hero?.name || "Arunabh Banerjee"}
                 </h1>
                 <p className="text-base sm:text-lg text-[#d4af37] font-serif tracking-wide pt-1">
-                  Supreme Court Advocate
+                  {config.hero?.roleBadge || "Supreme Court Advocate"}
                 </p>
               </div>
 
               {/* Short Description */}
               <p className="text-sm sm:text-base text-gray-300 leading-relaxed max-w-xl">
-                Legal consultation and representation across criminal, matrimonial, commercial, constitutional, and human rights matters.
+                {config.hero?.bioText || "Legal consultation and representation across criminal, matrimonial, commercial, constitutional, and human rights matters."}
               </p>
 
               {/* Prominent Direct Phone */}
@@ -322,11 +334,11 @@ export default function App() {
                     Direct Chamber Helpline
                   </span>
                   <a 
-                    href="tel:+919810703335" 
+                    href={`tel:${config.contacts?.primaryMobile || "+919810703335"}`} 
                     onClick={() => cmsService.trackClick("call")}
                     className="text-base sm:text-lg font-mono font-bold text-white hover:text-[#d4af37] transition-colors"
                   >
-                    +91 98107 03335
+                    {config.contacts?.displayMobile || "+91 98107 03335"}
                   </a>
                 </div>
               </div>
@@ -352,21 +364,11 @@ export default function App() {
 
                     {/* Real Portrait */}
                     <img
-                      src={arunabhPortrait}
-                      alt="Advocate Arunabh Banerjee, Supreme Court of India Advocate"
+                      src={config.hero?.portraitUrl || arunabhPortrait}
+                      alt={`${config.hero?.name || "Advocate Arunabh Banerjee"}, Supreme Court of India Advocate`}
                       className="w-full aspect-[4/5] object-cover rounded-xs filter contrast-[1.05] brightness-[0.98]"
                       loading="eager"
                     />
-
-                    {/* Caption Banner */}
-                    <div className="mt-3 pt-2.5 border-t border-[#d4af37]/25 text-center">
-                      <p className="font-serif text-xs font-semibold text-[#d4af37] tracking-wider uppercase">
-                        Advocate Arunabh Banerjee
-                      </p>
-                      <p className="text-[10px] text-gray-400 tracking-widest uppercase font-mono mt-0.5">
-                        Chambers • Supreme Court of India
-                      </p>
-                    </div>
 
                   </div>
                 </div>
@@ -375,7 +377,7 @@ export default function App() {
                 <div className="mt-3.5 flex flex-col sm:flex-row gap-2.5 w-full relative z-20">
                   {/* WhatsApp */}
                   <a
-                    href="https://wa.me/919810703335"
+                    href={`https://wa.me/${(config.contacts?.whatsappNumber || "919810703335").replace(/[^0-9]/g, "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => cmsService.trackClick("whatsapp")}
@@ -662,9 +664,18 @@ export default function App() {
               <p className="font-serif text-xs font-semibold text-white tracking-wide">
                 Advocate Arunabh Banerjee • Supreme Court Advocate
               </p>
-              <p className="text-[10px] text-gray-400 font-mono">
-                © 2026 All Rights Reserved • Informational &amp; Consultation Portal
-              </p>
+              <div className="flex items-center gap-2 text-[10px] text-gray-400 font-mono">
+                <span>© 2026 All Rights Reserved</span>
+                <span>•</span>
+                <button
+                  type="button"
+                  onClick={() => setShowAdminPanel(true)}
+                  className="text-gray-500 hover:text-[#d4af37] transition-colors cursor-pointer underline underline-offset-2"
+                  title="Chamber Admin Portal (Passcode: 2026)"
+                >
+                  Chamber Portal
+                </button>
+              </div>
             </div>
 
             {/* Action button: Contact Developer */}

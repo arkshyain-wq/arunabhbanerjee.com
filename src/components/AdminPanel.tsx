@@ -32,7 +32,11 @@ import {
   CheckCircle2,
   Calendar,
   Clock,
-  Upload
+  Upload,
+  Bell,
+  BellRing,
+  Smartphone,
+  X
 } from "lucide-react";
 import { SiteCMSConfig, LeadItem, VisitorStats } from "../types/cms";
 import { cmsService } from "../services/cmsService";
@@ -45,6 +49,12 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [passwordInput, setPasswordInput] = useState<string>("");
   const [authError, setAuthError] = useState<string>("");
+  const [rememberPasscode, setRememberPasscode] = useState<boolean>(true);
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
+  const [isAppInstalled, setIsAppInstalled] = useState<boolean>(false);
+  const [showInstallModal, setShowInstallModal] = useState<boolean>(false);
+  const [hasNotificationPerm, setHasNotificationPerm] = useState<boolean>(cmsService.hasNotificationPermission());
+
   const [activeTab, setActiveTab] = useState<
     "dashboard" | "leads" | "texts" | "practice" | "contacts" | "buttons" | "pictures" | "theme" | "seo" | "firebase"
   >("dashboard");
@@ -57,12 +67,30 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
   const [firebaseStatusMsg, setFirebaseStatusMsg] = useState<string>("");
 
-  // Check if session was already authenticated
+  // Check if session was already authenticated or remembered
   useEffect(() => {
-    const authSession = sessionStorage.getItem("arunabh_admin_auth");
-    if (authSession === "2026") {
+    const remembered = localStorage.getItem("arunabh_admin_remember");
+    const storedPass = localStorage.getItem("arunabh_admin_auth");
+    const sessionPass = sessionStorage.getItem("arunabh_admin_auth");
+
+    if ((remembered === "true" && storedPass === "2026") || sessionPass === "2026") {
       setIsAuthenticated(true);
     }
+
+    // Capture PWA beforeinstallprompt event
+    const installHandler = (e: any) => {
+      e.preventDefault();
+      setDeferredInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", installHandler);
+
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      setIsAppInstalled(true);
+    }
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", installHandler);
+    };
   }, []);
 
   // Subscribe to live leads and config updates
@@ -85,17 +113,62 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     e.preventDefault();
     if (passwordInput === "2026") {
       setIsAuthenticated(true);
+      if (rememberPasscode) {
+        localStorage.setItem("arunabh_admin_remember", "true");
+        localStorage.setItem("arunabh_admin_auth", "2026");
+      } else {
+        localStorage.removeItem("arunabh_admin_remember");
+        localStorage.removeItem("arunabh_admin_auth");
+      }
       sessionStorage.setItem("arunabh_admin_auth", "2026");
       setAuthError("");
     } else {
-      setAuthError("Incorrect password. Please enter the authorized passcode.");
+      setAuthError("Incorrect password. Please enter authorized passcode (2026).");
     }
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("arunabh_admin_remember");
+    localStorage.removeItem("arunabh_admin_auth");
     sessionStorage.removeItem("arunabh_admin_auth");
     setIsAuthenticated(false);
     setPasswordInput("");
+  };
+
+  const handleInstallApp = async () => {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice;
+      if (choice.outcome === "accepted") {
+        setIsAppInstalled(true);
+      }
+      setDeferredInstallPrompt(null);
+    } else {
+      setShowInstallModal(true);
+    }
+  };
+
+  const handleToggleNotifications = async () => {
+    const granted = await cmsService.requestNotificationPermission();
+    setHasNotificationPerm(granted);
+    if (granted) {
+      cmsService.playNotificationChime();
+      cmsService.sendBrowserNotification("⚖️ Chamber Notifications Active", "You will receive instant alerts for every new consultation booking.");
+    }
+  };
+
+  const handleCreateTestLead = async () => {
+    setSaveStatus("Creating test booking...");
+    await cmsService.addLead({
+      name: "Test Verification Client",
+      phone: "+91 98107 03335",
+      caseType: "Criminal Defense & Bail",
+      date: new Date().toISOString().split("T")[0],
+      message: "Testing instant admin notification & real-time synchronization.",
+      isUrgent: true
+    });
+    setSaveStatus("Test booking created and synced!");
+    setTimeout(() => setSaveStatus(""), 4000);
   };
 
   const handleSaveAll = async () => {
@@ -224,6 +297,17 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                     <span>{authError}</span>
                   </p>
                 )}
+                
+                {/* Remember Passcode Checkbox */}
+                <label className="flex items-center justify-center gap-2 text-xs text-gray-400 mt-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={rememberPasscode}
+                    onChange={(e) => setRememberPasscode(e.target.checked)}
+                    className="w-4 h-4 rounded-xs accent-[#dbb657] cursor-pointer"
+                  />
+                  <span>Remember Passcode on this device</span>
+                </label>
               </div>
 
               <div className="flex gap-2">
@@ -241,6 +325,16 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                   Exit
                 </button>
               </div>
+
+              {/* Install Chamber App PWA Button */}
+              <button
+                type="button"
+                onClick={handleInstallApp}
+                className="w-full py-2.5 px-3 bg-[#151924] hover:bg-[#1c2233] border border-[#dbb657]/40 text-[#dbb657] text-xs font-semibold rounded-xs flex items-center justify-center gap-2 transition-colors cursor-pointer mt-2"
+              >
+                <Smartphone className="w-4 h-4" />
+                <span>{isAppInstalled ? "App Installed on Device" : "📱 Download Chamber App (PWA)"}</span>
+              </button>
             </form>
 
             <div className="pt-2 text-[11px] text-gray-500 font-mono">
@@ -259,73 +353,138 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     <div className="fixed inset-0 z-50 bg-[#0a0b10] text-gray-200 flex flex-col overflow-hidden font-sans">
       
       {/* TOP BAR */}
-      <header className="h-16 border-b border-[#dbb657]/30 bg-[#10121a] px-6 flex items-center justify-between flex-shrink-0 z-20">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-[#171b26] border border-[#dbb657]/50 rounded-xs">
-            <Shield className="w-5 h-5 text-[#dbb657]" />
+      <header className="border-b border-[#dbb657]/30 bg-[#10121a] px-3 sm:px-6 py-2.5 min-h-16 flex items-center justify-between flex-wrap sm:flex-nowrap gap-3 flex-shrink-0 z-20">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 sm:p-2 bg-[#171b26] border border-[#dbb657]/50 rounded-xs">
+            <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-[#dbb657]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-serif text-base font-bold text-white tracking-wide uppercase">
-                Advocate Arunabh Banerjee — Admin CMS
+              <h1 className="font-serif text-xs sm:text-base font-bold text-white tracking-wide uppercase">
+                Chamber Admin CMS
               </h1>
-              <span className="px-2 py-0.5 bg-[#dbb657]/15 text-[#dbb657] text-[10px] font-mono border border-[#dbb657]/40 rounded-xs">
-                Passcode Protected (2026)
+              <span className="hidden sm:inline-block px-2 py-0.5 bg-[#dbb657]/15 text-[#dbb657] text-[10px] font-mono border border-[#dbb657]/40 rounded-xs">
+                Passcode: 2026
               </span>
             </div>
-            <p className="text-[11px] text-gray-400">
-              Live Real-Time Management • Domain: <span className="text-amber-300 font-mono">arunabhbanerjee.com</span>
+            <p className="text-[10px] sm:text-[11px] text-gray-400">
+              Domain: <span className="text-amber-300 font-mono">arunabhbanerjee.com</span>
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap justify-end">
           {saveStatus && (
-            <span className="text-xs px-3 py-1 bg-emerald-950/80 border border-emerald-500/60 text-emerald-300 rounded-xs flex items-center gap-1.5 animate-pulse">
-              <Check className="w-3.5 h-3.5" />
+            <span className="text-[11px] px-2.5 py-1 bg-emerald-950/80 border border-emerald-500/60 text-emerald-300 rounded-xs flex items-center gap-1 animate-pulse">
+              <Check className="w-3 h-3" />
               <span>{saveStatus}</span>
             </span>
           )}
 
+          {/* PWA Download / Install App Button */}
+          <button
+            onClick={handleInstallApp}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#171b26] hover:bg-[#202534] border border-[#dbb657]/40 text-[#dbb657] text-xs font-semibold rounded-xs transition-colors cursor-pointer"
+            title="Download & Install Chamber App on Phone or PC"
+          >
+            <Smartphone className="w-3.5 h-3.5 text-[#dbb657]" />
+            <span className="hidden xs:inline">{isAppInstalled ? "App Installed" : "Download App"}</span>
+          </button>
+
+          {/* Push Notification Toggle Button */}
+          <button
+            onClick={handleToggleNotifications}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 border text-xs font-semibold rounded-xs transition-colors cursor-pointer ${
+              hasNotificationPerm 
+                ? "bg-emerald-950/60 border-emerald-500/50 text-emerald-300"
+                : "bg-gray-800/80 border-gray-700 text-gray-300 hover:text-white"
+            }`}
+            title="Toggle Real-Time Booking Sound & Desktop/Phone Alerts"
+          >
+            {hasNotificationPerm ? <BellRing className="w-3.5 h-3.5 text-emerald-400" /> : <Bell className="w-3.5 h-3.5 text-gray-400" />}
+            <span className="hidden sm:inline">{hasNotificationPerm ? "Alerts Active" : "Enable Alerts"}</span>
+          </button>
+
+          {/* Save All Button */}
           <button
             onClick={handleSaveAll}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#dbb657] to-[#b28d2f] hover:from-[#f3e7c4] hover:to-[#dbb657] text-[#0f1115] text-xs font-bold uppercase tracking-wider rounded-xs shadow-md transition-all active:scale-95 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-[#dbb657] to-[#b28d2f] hover:from-[#f3e7c4] hover:to-[#dbb657] text-[#0f1115] text-xs font-bold uppercase tracking-wider rounded-xs shadow-md transition-all active:scale-95 cursor-pointer"
           >
-            <Save className="w-4 h-4" />
-            <span>Save All</span>
+            <Save className="w-3.5 h-3.5" />
+            <span>Save</span>
           </button>
 
           <button
             onClick={handleResetDefaults}
             title="Reset to default settings"
-            className="p-2 border border-gray-700 hover:border-amber-500/60 text-gray-400 hover:text-amber-300 rounded-xs transition-colors cursor-pointer"
+            className="p-1.5 border border-gray-700 hover:border-amber-500/60 text-gray-400 hover:text-amber-300 rounded-xs transition-colors cursor-pointer"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3.5 h-3.5" />
           </button>
 
           <button
             onClick={onClose}
-            className="flex items-center gap-1.5 px-3 py-2 border border-gray-700 hover:border-[#dbb657] text-gray-300 hover:text-white text-xs font-medium rounded-xs transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 border border-gray-700 hover:border-[#dbb657] text-gray-300 hover:text-white text-xs font-medium rounded-xs transition-colors cursor-pointer"
+            title="View website"
           >
             <Eye className="w-3.5 h-3.5 text-[#dbb657]" />
-            <span>View Website</span>
+            <span className="hidden sm:inline">Website</span>
           </button>
 
           <button
             onClick={handleLogout}
-            className="p-2 border border-red-900/60 hover:bg-red-950/50 text-red-400 rounded-xs transition-colors cursor-pointer"
+            className="p-1.5 border border-red-900/60 hover:bg-red-950/50 text-red-400 rounded-xs transition-colors cursor-pointer"
             title="Lock & Logout"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5" />
           </button>
         </div>
       </header>
 
-      {/* MAIN CONTAINER: SIDEBAR + CONTENT */}
+      {/* MOBILE HORIZONTAL TABS BAR (Phone Screens) */}
+      <div className="md:hidden flex overflow-x-auto no-scrollbar gap-1 px-3 py-2 bg-[#0c0e15] border-b border-gray-800 shrink-0">
+        {[
+          { id: "dashboard", label: "Dashboard", icon: Users, badge: `${visitorStats.totalVisits}` },
+          { id: "leads", label: "Booking Leads", icon: Briefcase, badge: `${leads.length}` },
+          { id: "texts", label: "Site Texts", icon: FileText },
+          { id: "pictures", label: "Portraits", icon: ImageIcon },
+          { id: "contacts", label: "Helpline", icon: Phone },
+          { id: "buttons", label: "Buttons", icon: Sparkles },
+          { id: "theme", label: "Colors", icon: Palette },
+          { id: "seo", label: "SEO", icon: Globe },
+          { id: "firebase", label: "Database", icon: Database },
+        ].map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id as any)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xs text-[11px] font-mono whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
+                isActive
+                  ? "bg-[#dbb657] text-black font-bold shadow-sm"
+                  : "bg-gray-900/90 text-gray-300 border border-gray-800 hover:bg-gray-800"
+              }`}
+            >
+              <Icon className="w-3 h-3" />
+              <span>{item.label}</span>
+              {item.badge && (
+                <span className={`text-[9px] px-1 py-0.2 rounded-xs font-mono ${
+                  isActive ? "bg-black/30 text-black font-bold" : "bg-gray-800 text-gray-400"
+                }`}>
+                  {item.badge}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* MAIN CONTAINER: SIDEBAR (Desktop) + CONTENT */}
       <div className="flex flex-1 overflow-hidden">
         
-        {/* SIDEBAR NAVIGATION */}
-        <aside className="w-64 border-r border-gray-800 bg-[#0e1017] flex flex-col flex-shrink-0 overflow-y-auto">
+        {/* DESKTOP SIDEBAR NAVIGATION */}
+        <aside className="hidden md:flex w-60 border-r border-gray-800 bg-[#0e1017] flex-col flex-shrink-0 overflow-y-auto">
           <div className="p-3 text-[10px] font-mono uppercase tracking-widest text-gray-500 px-4 pt-4">
             Navigation Menu
           </div>
@@ -335,10 +494,9 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
               { id: "dashboard", label: "Dashboard & Visitors", icon: Users, badge: `${visitorStats.totalVisits} visits` },
               { id: "leads", label: "Booking Leads", icon: Briefcase, badge: `${leads.length}` },
               { id: "texts", label: "Site Texts & Bio", icon: FileText },
-              { id: "practice", label: "Practice & Matters", icon: Compass },
+              { id: "pictures", label: "Pictures & Media", icon: ImageIcon },
               { id: "contacts", label: "Phone, WhatsApp & Address", icon: Phone },
               { id: "buttons", label: "Buttons & Action Links", icon: Sparkles },
-              { id: "pictures", label: "Pictures & Media", icon: ImageIcon },
               { id: "theme", label: "Colors & Theme", icon: Palette },
               { id: "seo", label: "SEO (arunabhbanerjee.com)", icon: Globe },
               { id: "firebase", label: "Firebase Database", icon: Database, badge: config.firebase?.enabled ? "Active" : "Ready" },
@@ -560,13 +718,22 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={handleCreateTestLead}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 text-xs font-semibold rounded-xs transition-colors cursor-pointer"
+                    title="Simulate an instant consultation booking to test notifications & cross-device sync"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Test Booking Sync</span>
+                  </button>
+
                   <button
                     onClick={handleExportCSV}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-xs font-semibold rounded-xs transition-colors cursor-pointer text-gray-200"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-xs font-semibold rounded-xs transition-colors cursor-pointer text-gray-200"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>Export to CSV</span>
+                    <span>Export CSV</span>
                   </button>
                 </div>
               </div>
@@ -596,8 +763,84 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                 </select>
               </div>
 
-              {/* LEADS TABLE */}
-              <div className="bg-[#12141c] border border-gray-800 rounded-xs overflow-hidden">
+              {/* MOBILE LEADS CARDS VIEW (Phones) */}
+              <div className="md:hidden space-y-3">
+                {filteredLeads.length > 0 ? (
+                  filteredLeads.map((lead) => (
+                    <div key={lead.id} className="p-4 bg-[#12141c] border border-gray-800 rounded-xs space-y-2.5 shadow-sm">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-bold text-white text-sm">{lead.name}</p>
+                          <span className="text-[10px] text-gray-400 font-mono">📅 Date: {lead.date || "Not set"}</span>
+                        </div>
+                        <select
+                          value={lead.status}
+                          onChange={(e) => handleLeadStatusChange(lead.id, e.target.value as any)}
+                          className={`text-[10px] font-bold uppercase px-2 py-1 rounded-xs border outline-none ${
+                            lead.status === 'new' 
+                              ? 'bg-amber-950/80 border-amber-500/60 text-amber-300' 
+                              : lead.status === 'contacted'
+                              ? 'bg-blue-950/80 border-blue-500/60 text-blue-300'
+                              : lead.status === 'consultation_scheduled'
+                              ? 'bg-emerald-950/80 border-emerald-500/60 text-emerald-300'
+                              : 'bg-gray-800 border-gray-600 text-gray-400'
+                          }`}
+                        >
+                          <option value="new">New</option>
+                          <option value="contacted">Contacted</option>
+                          <option value="consultation_scheduled">Scheduled</option>
+                          <option value="closed">Closed</option>
+                        </select>
+                      </div>
+
+                      <div className="bg-[#0a0b10] p-2.5 rounded-xs border border-gray-800/80">
+                        <span className="text-[10px] uppercase font-mono text-gray-500 block">Consultation Matter:</span>
+                        <p className="text-xs text-[#dbb657] font-semibold mt-0.5">{lead.caseType}</p>
+                      </div>
+
+                      {lead.message && (
+                        <p className="text-[11px] text-gray-300 italic bg-[#0d0f17] p-2 rounded-xs border border-gray-800/60">
+                          "{lead.message}"
+                        </p>
+                      )}
+
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-800/80">
+                        <div className="flex gap-2">
+                          <a
+                            href={`tel:${lead.phone.replace(/\s+/g, '')}`}
+                            className="px-2.5 py-1.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 text-xs font-mono rounded-xs flex items-center gap-1"
+                          >
+                            <Phone className="w-3.5 h-3.5" /> Call
+                          </a>
+                          <a
+                            href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(lead.name)}%2C%20Advocate%20Arunabh%20Banerjee's%20chamber%20is%20reviewing%20your%20consultation%20request.`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2.5 py-1.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 text-xs font-mono rounded-xs flex items-center gap-1"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" /> WhatsApp
+                          </a>
+                        </div>
+
+                        <button
+                          onClick={() => handleDeleteLead(lead.id)}
+                          className="p-1.5 text-gray-500 hover:text-red-400 transition-colors"
+                          title="Delete Lead"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-gray-500 bg-[#12141c] border border-gray-800 rounded-xs text-xs">
+                    No booking leads matching your search criteria.
+                  </div>
+                )}
+              </div>
+
+              {/* DESKTOP LEADS TABLE (Computer Screens) */}
+              <div className="hidden md:block bg-[#12141c] border border-gray-800 rounded-xs overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
@@ -606,7 +849,6 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                         <th className="py-3 px-4">Phone / WhatsApp</th>
                         <th className="py-3 px-4">Case Category</th>
                         <th className="py-3 px-4">Preferred Date</th>
-                        <th className="py-3 px-4">Urgent</th>
                         <th className="py-3 px-4">Status</th>
                         <th className="py-3 px-4">Actions</th>
                       </tr>
@@ -652,15 +894,6 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                               {lead.date || "Not Specified"}
                             </td>
                             <td className="py-3 px-4">
-                              {lead.isUrgent ? (
-                                <span className="px-2 py-0.5 bg-red-950/80 border border-red-500/60 text-red-400 text-[10px] font-bold rounded-xs">
-                                  URGENT
-                                </span>
-                              ) : (
-                                <span className="text-[10px] text-gray-500">Normal</span>
-                              )}
-                            </td>
-                            <td className="py-3 px-4">
                               <select
                                 value={lead.status}
                                 onChange={(e) => handleLeadStatusChange(lead.id, e.target.value as any)}
@@ -693,7 +926,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={7} className="py-8 text-center text-gray-500">
+                          <td colSpan={6} className="py-8 text-center text-gray-500">
                             No booking leads matching your search criteria.
                           </td>
                         </tr>
@@ -1709,6 +1942,59 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
 
         </main>
       </div>
+
+      {/* PWA INSTALLATION INSTRUCTION MODAL */}
+      {showInstallModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#12141c] border-2 border-[#dbb657] rounded-sm p-6 shadow-2xl relative space-y-4">
+            <button
+              onClick={() => setShowInstallModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-xs"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-[#1c202d] border border-[#dbb657]/40 rounded-full">
+                <Smartphone className="w-6 h-6 text-[#dbb657]" />
+              </div>
+              <div>
+                <h3 className="font-serif text-lg font-bold text-white tracking-wide">
+                  Install Chamber App
+                </h3>
+                <p className="text-xs text-gray-400">Add to your Phone or Computer Home Screen</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 text-xs text-gray-300">
+              <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs space-y-1">
+                <span className="font-bold text-[#dbb657] block">📱 Android & Google Chrome:</span>
+                <p>1. Tap the three dots menu (⋮) in your browser top right corner.</p>
+                <p>2. Select <strong className="text-white">"Install app"</strong> or <strong className="text-white">"Add to Home screen"</strong>.</p>
+                <p>3. The Chamber Admin app icon will appear on your phone home screen.</p>
+              </div>
+
+              <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs space-y-1">
+                <span className="font-bold text-[#dbb657] block">🍏 Apple iPhone & iPad (Safari):</span>
+                <p>1. Tap the <strong className="text-white">Share button</strong> (square with arrow pointing up) at the bottom.</p>
+                <p>2. Scroll down and tap <strong className="text-white">"Add to Home Screen"</strong>.</p>
+                <p>3. Tap <strong className="text-white">Add</strong> in top right. You're done!</p>
+              </div>
+
+              <div className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xs text-emerald-300">
+                ✨ <strong>Instant Alerts:</strong> Once installed, you will receive sound alerts and push notifications directly on your phone whenever a client books a consultation.
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowInstallModal(false)}
+              className="w-full py-2.5 bg-gradient-to-r from-[#dbb657] to-[#b28d2f] text-black font-bold uppercase tracking-wider text-xs rounded-xs hover:opacity-90 transition-opacity"
+            >
+              Got It
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
