@@ -335,61 +335,68 @@ export default function App() {
 
             {/* Right Advocate Portrait (desktop) / Stacked (mobile) */}
             <div className="lg:col-span-5 flex justify-center lg:justify-end">
-              <div className="relative max-w-xs sm:max-w-sm w-full group">
+              <div className="max-w-xs sm:max-w-sm w-full">
                 
-                {/* Double Gold Framing & Glow */}
-                <div className="absolute -inset-1 bg-gradient-to-b from-[#d4af37]/45 via-[#b28d2f]/20 to-transparent rounded-xs blur-[2px] group-hover:from-[#d4af37]/70 transition-all duration-500" />
-                
-                <div className="relative border border-[#d4af37]/50 bg-[#0f121a] p-2.5 rounded-xs shadow-2xl">
+                {/* Portrait Card with Glow */}
+                <div className="relative group">
+                  {/* Double Gold Framing & Glow */}
+                  <div className="absolute -inset-1 bg-gradient-to-b from-[#d4af37]/45 via-[#b28d2f]/20 to-transparent rounded-xs blur-[2px] group-hover:from-[#d4af37]/70 transition-all duration-500 pointer-events-none" />
                   
-                  {/* Decorative Classical Corner Accents */}
-                  <div className="absolute top-1 left-1 w-3 h-3 border-t border-l border-[#d4af37]" />
-                  <div className="absolute top-1 right-1 w-3 h-3 border-t border-r border-[#d4af37]" />
-                  <div className="absolute bottom-1 left-1 w-3 h-3 border-b border-l border-[#d4af37]" />
-                  <div className="absolute bottom-1 right-1 w-3 h-3 border-b border-r border-[#d4af37]" />
+                  <div className="relative border border-[#d4af37]/50 bg-[#0f121a] p-2.5 rounded-xs shadow-2xl">
+                    
+                    {/* Decorative Classical Corner Accents */}
+                    <div className="absolute top-1 left-1 w-3 h-3 border-t border-l border-[#d4af37] pointer-events-none" />
+                    <div className="absolute top-1 right-1 w-3 h-3 border-t border-r border-[#d4af37] pointer-events-none" />
+                    <div className="absolute bottom-1 left-1 w-3 h-3 border-b border-l border-[#d4af37] pointer-events-none" />
+                    <div className="absolute bottom-1 right-1 w-3 h-3 border-b border-r border-[#d4af37] pointer-events-none" />
 
-                  {/* Real Portrait */}
-                  <img
-                    src={arunabhPortrait}
-                    alt="Advocate Arunabh Banerjee, Supreme Court of India Advocate"
-                    className="w-full aspect-[4/5] object-cover rounded-xs filter contrast-[1.05] brightness-[0.98]"
-                    loading="eager"
-                  />
+                    {/* Real Portrait */}
+                    <img
+                      src={arunabhPortrait}
+                      alt="Advocate Arunabh Banerjee, Supreme Court of India Advocate"
+                      className="w-full aspect-[4/5] object-cover rounded-xs filter contrast-[1.05] brightness-[0.98]"
+                      loading="eager"
+                    />
 
-                  {/* Caption Banner */}
-                  <div className="mt-3 pt-2.5 border-t border-[#d4af37]/25 text-center">
-                    <p className="font-serif text-xs font-semibold text-[#d4af37] tracking-wider uppercase">
-                      Advocate Arunabh Banerjee
-                    </p>
-                    <p className="text-[10px] text-gray-400 tracking-widest uppercase font-mono mt-0.5">
-                      Chambers • Supreme Court of India
-                    </p>
+                    {/* Caption Banner */}
+                    <div className="mt-3 pt-2.5 border-t border-[#d4af37]/25 text-center">
+                      <p className="font-serif text-xs font-semibold text-[#d4af37] tracking-wider uppercase">
+                        Advocate Arunabh Banerjee
+                      </p>
+                      <p className="text-[10px] text-gray-400 tracking-widest uppercase font-mono mt-0.5">
+                        Chambers • Supreme Court of India
+                      </p>
+                    </div>
+
                   </div>
-
                 </div>
 
                 {/* Action Buttons Directly Under the Image */}
-                <div className="mt-3.5 flex flex-col sm:flex-row gap-2.5 w-full">
+                <div className="mt-3.5 flex flex-col sm:flex-row gap-2.5 w-full relative z-20">
                   {/* WhatsApp */}
                   <a
                     href="https://wa.me/919810703335"
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => cmsService.trackClick("whatsapp")}
-                    className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xs border border-emerald-500/50 bg-emerald-950/25 text-emerald-400 hover:bg-emerald-900/40 text-xs uppercase tracking-wider font-semibold active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(16,185,129,0.12)] cursor-pointer"
+                    className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xs border border-emerald-500/60 bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 hover:text-emerald-200 text-xs uppercase tracking-wider font-semibold active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(16,185,129,0.18)] cursor-pointer"
                   >
                     <MessageSquare className="w-4 h-4 text-emerald-400" />
                     WhatsApp
                   </a>
 
                   {/* Book Appointment */}
-                  <button
-                    onClick={() => scrollToSection("booking")}
-                    className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xs bg-gradient-to-r from-[#b28d2f] via-[#d4af37] to-[#b28d2f] text-black font-bold text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
+                  <a
+                    href="#booking"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToSection("booking");
+                    }}
+                    className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xs bg-gradient-to-r from-[#b28d2f] via-[#d4af37] to-[#b28d2f] text-black font-bold text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer text-center"
                   >
                     <Calendar className="w-4 h-4 text-black" />
                     Book Appointment
-                  </button>
+                  </a>
                 </div>
 
               </div>
