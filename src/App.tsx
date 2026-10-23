@@ -449,41 +449,36 @@ export default function App() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
             {[
               {
                 id: "Individuals",
                 name: "Individuals",
                 subtitle: "Personal & Criminal Defense",
-                desc: "Anticipatory & regular bail, criminal trials, matrimonial disputes, fundamental rights & civil litigation.",
                 icon: User
               },
               {
                 id: "Corporate",
                 name: "Corporate",
                 subtitle: "Commercial & Business Litigation",
-                desc: "High-value commercial contracts, NCLT insolvency proceedings, corporate arbitration, debt recovery & statutory defense.",
                 icon: Building2
               },
               {
                 id: "NGOs",
                 name: "NGOs",
                 subtitle: "Civil Society & Human Rights",
-                desc: "Protection of democratic rights, human rights advocacy, public interest litigations (PIL) & regulatory compliance.",
                 icon: Shield
               },
               {
                 id: "Trusts",
                 name: "Trusts",
                 subtitle: "Charitable & Endowment Disputes",
-                desc: "Trust property administration, institutional governance disputes, public charitable foundations & endowment compliance.",
                 icon: Award
               },
               {
                 id: "NRIs",
                 name: "NRIs",
                 subtitle: "Non-Resident Indian Counsel",
-                desc: "Cross-border litigation, ancestral real estate disputes, power of attorney litigation & High Court / Supreme Court representation.",
                 icon: Globe
               }
             ].map((cat) => {
@@ -491,36 +486,30 @@ export default function App() {
               return (
                 <div 
                   key={cat.id} 
-                  className="bg-[#10131c] border border-gray-800 hover:border-[#d4af37]/60 rounded-xs p-5 flex flex-col justify-between transition-all duration-300 group hover:shadow-[0_8px_30px_rgba(212,175,55,0.1)] hover:-translate-y-0.5"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, clientCategory: cat.id }));
+                    scrollToSection("booking");
+                  }}
+                  className="bg-[#10131c] border border-gray-800/90 hover:border-[#d4af37]/70 rounded-xs p-5 flex flex-col justify-between transition-all duration-300 group hover:shadow-[0_8px_25px_rgba(212,175,55,0.12)] hover:-translate-y-1 cursor-pointer"
                 >
                   <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-xs bg-[#171b26] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-xs bg-[#171b26] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] group-hover:scale-105 group-hover:border-[#d4af37] transition-all">
                       <IconComp className="w-5 h-5 text-[#d4af37]" />
                     </div>
                     <div>
                       <h3 className="font-serif text-lg font-bold text-white group-hover:text-[#f5d77f] transition-colors">
                         {cat.name}
                       </h3>
-                      <span className="text-[10px] text-[#d4af37] uppercase font-mono block mt-0.5">
+                      <span className="text-[10px] text-[#d4af37] uppercase font-mono block mt-1 tracking-wide font-semibold">
                         {cat.subtitle}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-400 leading-relaxed">
-                      {cat.desc}
-                    </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFormData(prev => ({ ...prev, clientCategory: cat.id }));
-                      scrollToSection("booking");
-                    }}
-                    className="mt-4 pt-3 border-t border-gray-800/80 flex items-center justify-between text-xs text-gray-300 group-hover:text-[#d4af37] transition-colors cursor-pointer w-full text-left"
-                  >
+                  <div className="mt-4 pt-3 border-t border-gray-800/80 flex items-center justify-between text-xs text-gray-300 group-hover:text-[#d4af37] transition-colors w-full">
                     <span className="text-[11px] font-medium uppercase tracking-wider">Book Consultation</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                  </button>
+                  </div>
                 </div>
               );
             })}
