@@ -1,0 +1,1672 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useEffect } from "react";
+import { 
+  Lock, 
+  Shield, 
+  Save, 
+  RotateCcw, 
+  ExternalLink, 
+  LogOut, 
+  Check, 
+  AlertCircle, 
+  Users, 
+  FileText, 
+  Phone, 
+  Image as ImageIcon, 
+  Palette, 
+  Globe, 
+  Database, 
+  Trash2, 
+  Download, 
+  Plus, 
+  Search, 
+  MessageSquare, 
+  Eye, 
+  Sparkles, 
+  Briefcase, 
+  Compass,
+  CheckCircle2,
+  Calendar,
+  Clock,
+  Upload
+} from "lucide-react";
+import { SiteCMSConfig, LeadItem, VisitorStats } from "../types/cms";
+import { cmsService } from "../services/cmsService";
+
+interface AdminPanelProps {
+  onClose: () => void;
+}
+
+export default function AdminPanel({ onClose }: AdminPanelProps) {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [passwordInput, setPasswordInput] = useState<string>("");
+  const [authError, setAuthError] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<
+    "dashboard" | "leads" | "texts" | "practice" | "contacts" | "buttons" | "pictures" | "theme" | "seo" | "firebase"
+  >("dashboard");
+
+  const [config, setConfig] = useState<SiteCMSConfig>(cmsService.getConfig());
+  const [leads, setLeads] = useState<LeadItem[]>(cmsService.getLeads());
+  const [visitorStats, setVisitorStats] = useState<VisitorStats>(cmsService.getVisitorStats());
+  const [saveStatus, setSaveStatus] = useState<string>("");
+  const [searchLeadQuery, setSearchLeadQuery] = useState<string>("");
+  const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
+  const [firebaseStatusMsg, setFirebaseStatusMsg] = useState<string>("");
+
+  // Check if session was already authenticated
+  useEffect(() => {
+    const authSession = sessionStorage.getItem("arunabh_admin_auth");
+    if (authSession === "2026") {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  // Subscribe to live leads and config updates
+  useEffect(() => {
+    const unsubConfig = cmsService.subscribeConfig((newConfig) => {
+      setConfig(newConfig);
+    });
+    const unsubLeads = cmsService.subscribeLeads((newLeads) => {
+      setLeads(newLeads);
+    });
+    setVisitorStats(cmsService.getVisitorStats());
+
+    return () => {
+      unsubConfig();
+      unsubLeads();
+    };
+  }, []);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === "2026") {
+      setIsAuthenticated(true);
+      sessionStorage.setItem("arunabh_admin_auth", "2026");
+      setAuthError("");
+    } else {
+      setAuthError("Incorrect password. Please enter the authorized passcode.");
+    }
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("arunabh_admin_auth");
+    setIsAuthenticated(false);
+    setPasswordInput("");
+  };
+
+  const handleSaveAll = async () => {
+    setSaveStatus("Saving changes...");
+    const success = await cmsService.saveConfig(config);
+    if (success) {
+      setSaveStatus("Saved successfully in real-time!");
+      setTimeout(() => setSaveStatus(""), 4000);
+    } else {
+      setSaveStatus("Failed to save changes.");
+    }
+  };
+
+  const handleResetDefaults = () => {
+    if (window.confirm("Are you sure you want to reset all site settings to official defaults?")) {
+      const reset = cmsService.resetToDefaultConfig();
+      setConfig(reset);
+      setSaveStatus("Reset to default configuration.");
+      setTimeout(() => setSaveStatus(""), 3000);
+    }
+  };
+
+  const handleLeadStatusChange = (id: string, newStatus: LeadItem["status"]) => {
+    cmsService.updateLeadStatus(id, newStatus);
+  };
+
+  const handleDeleteLead = (id: string) => {
+    if (window.confirm("Delete this booking lead record permanently?")) {
+      cmsService.deleteLead(id);
+    }
+  };
+
+  const handleExportCSV = () => {
+    const csvContent = cmsService.exportLeadsCSV();
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `consultation_leads_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Image file size should be less than 2MB for fast loading.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string;
+        setConfig(prev => ({
+          ...prev,
+          hero: {
+            ...prev.hero,
+            portraitUrl: base64
+          }
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleTestFirebase = async () => {
+    setFirebaseStatusMsg("Connecting to Firebase...");
+    await cmsService.saveConfig(config);
+    const res = await cmsService.initFirebaseIfEnabled();
+    setFirebaseStatusMsg(res.message);
+  };
+
+  // Filtered Leads
+  const filteredLeads = leads.filter(l => {
+    const matchQuery = 
+      l.name.toLowerCase().includes(searchLeadQuery.toLowerCase()) ||
+      l.phone.includes(searchLeadQuery) ||
+      (l.email && l.email.toLowerCase().includes(searchLeadQuery.toLowerCase())) ||
+      l.caseType.toLowerCase().includes(searchLeadQuery.toLowerCase());
+    
+    if (leadStatusFilter === "all") return matchQuery;
+    return matchQuery && l.status === leadStatusFilter;
+  });
+
+  // -------------------------------------------------------------
+  // LOGIN SCREEN
+  // -------------------------------------------------------------
+  if (!isAuthenticated) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#07080d]/95 backdrop-blur-xl flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-[#12141c] border-2 border-[#dbb657]/50 rounded-sm p-8 shadow-[0_15px_60px_rgba(219,182,87,0.15)] relative">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="p-4 rounded-full bg-[#1c202d] border border-[#dbb657]/40 shadow-inner">
+              <Shield className="w-10 h-10 text-[#dbb657]" />
+            </div>
+            
+            <div className="space-y-1">
+              <span className="font-serif text-[11px] tracking-[0.25em] text-[#dbb657] uppercase font-semibold">
+                CHAMBER CONTROL SYSTEM
+              </span>
+              <h2 className="font-serif text-2xl font-bold text-white tracking-wide uppercase">
+                Advocate Portal Admin
+              </h2>
+              <p className="text-xs text-gray-400">
+                Enter your authorized chamber passcode to manage texts, bookings, contacts, and SEO.
+              </p>
+            </div>
+
+            <form onSubmit={handleLogin} className="w-full space-y-4 pt-4">
+              <div>
+                <div className="relative">
+                  <input
+                    type="password"
+                    placeholder="Enter Passcode (2026)"
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    className="w-full px-4 py-3 bg-[#0a0b10] border border-gray-700 focus:border-[#dbb657] text-white text-center font-mono tracking-widest text-lg rounded-xs outline-none transition-all placeholder:text-gray-600"
+                    autoFocus
+                  />
+                  <Lock className="w-4 h-4 text-gray-500 absolute left-3 top-3.5" />
+                </div>
+                {authError && (
+                  <p className="text-red-400 text-xs mt-2 flex items-center justify-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    <span>{authError}</span>
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 py-3 px-4 bg-gradient-to-r from-[#dbb657] to-[#b28d2f] hover:from-[#f3e7c4] hover:to-[#dbb657] text-[#0f1115] font-bold text-xs uppercase tracking-wider rounded-xs transition-all shadow-lg active:scale-95 cursor-pointer"
+                >
+                  Unlock Admin Portal
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="py-3 px-4 border border-gray-700 hover:border-gray-500 text-gray-300 text-xs uppercase tracking-wider rounded-xs transition-all cursor-pointer"
+                >
+                  Exit
+                </button>
+              </div>
+            </form>
+
+            <div className="pt-2 text-[11px] text-gray-500 font-mono">
+              Domain: <span className="text-[#dbb657]">arunabhbanerjee.com</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // -------------------------------------------------------------
+  // AUTHENTICATED ADMIN DASHBOARD
+  // -------------------------------------------------------------
+  return (
+    <div className="fixed inset-0 z-50 bg-[#0a0b10] text-gray-200 flex flex-col overflow-hidden font-sans">
+      
+      {/* TOP BAR */}
+      <header className="h-16 border-b border-[#dbb657]/30 bg-[#10121a] px-6 flex items-center justify-between flex-shrink-0 z-20">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-[#171b26] border border-[#dbb657]/50 rounded-xs">
+            <Shield className="w-5 h-5 text-[#dbb657]" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="font-serif text-base font-bold text-white tracking-wide uppercase">
+                Advocate Arunabh Banerjee — Admin CMS
+              </h1>
+              <span className="px-2 py-0.5 bg-[#dbb657]/15 text-[#dbb657] text-[10px] font-mono border border-[#dbb657]/40 rounded-xs">
+                Passcode Protected (2026)
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-400">
+              Live Real-Time Management • Domain: <span className="text-amber-300 font-mono">arunabhbanerjee.com</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {saveStatus && (
+            <span className="text-xs px-3 py-1 bg-emerald-950/80 border border-emerald-500/60 text-emerald-300 rounded-xs flex items-center gap-1.5 animate-pulse">
+              <Check className="w-3.5 h-3.5" />
+              <span>{saveStatus}</span>
+            </span>
+          )}
+
+          <button
+            onClick={handleSaveAll}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#dbb657] to-[#b28d2f] hover:from-[#f3e7c4] hover:to-[#dbb657] text-[#0f1115] text-xs font-bold uppercase tracking-wider rounded-xs shadow-md transition-all active:scale-95 cursor-pointer"
+          >
+            <Save className="w-4 h-4" />
+            <span>Save All</span>
+          </button>
+
+          <button
+            onClick={handleResetDefaults}
+            title="Reset to default settings"
+            className="p-2 border border-gray-700 hover:border-amber-500/60 text-gray-400 hover:text-amber-300 rounded-xs transition-colors cursor-pointer"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={onClose}
+            className="flex items-center gap-1.5 px-3 py-2 border border-gray-700 hover:border-[#dbb657] text-gray-300 hover:text-white text-xs font-medium rounded-xs transition-colors cursor-pointer"
+          >
+            <Eye className="w-3.5 h-3.5 text-[#dbb657]" />
+            <span>View Website</span>
+          </button>
+
+          <button
+            onClick={handleLogout}
+            className="p-2 border border-red-900/60 hover:bg-red-950/50 text-red-400 rounded-xs transition-colors cursor-pointer"
+            title="Lock & Logout"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
+      </header>
+
+      {/* MAIN CONTAINER: SIDEBAR + CONTENT */}
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* SIDEBAR NAVIGATION */}
+        <aside className="w-64 border-r border-gray-800 bg-[#0e1017] flex flex-col flex-shrink-0 overflow-y-auto">
+          <div className="p-3 text-[10px] font-mono uppercase tracking-widest text-gray-500 px-4 pt-4">
+            Navigation Menu
+          </div>
+
+          <nav className="space-y-1 p-2">
+            {[
+              { id: "dashboard", label: "Dashboard & Visitors", icon: Users, badge: `${visitorStats.totalVisits} visits` },
+              { id: "leads", label: "Booking Leads", icon: Briefcase, badge: `${leads.length}` },
+              { id: "texts", label: "Site Texts & Bio", icon: FileText },
+              { id: "practice", label: "Practice & Matters", icon: Compass },
+              { id: "contacts", label: "Phone, WhatsApp & Address", icon: Phone },
+              { id: "buttons", label: "Buttons & Action Links", icon: Sparkles },
+              { id: "pictures", label: "Pictures & Media", icon: ImageIcon },
+              { id: "theme", label: "Colors & Theme", icon: Palette },
+              { id: "seo", label: "SEO (arunabhbanerjee.com)", icon: Globe },
+              { id: "firebase", label: "Firebase Database", icon: Database, badge: config.firebase?.enabled ? "Active" : "Ready" },
+            ].map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id as any)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xs text-xs font-medium transition-all cursor-pointer ${
+                    isActive
+                      ? "bg-[#dbb657]/15 text-[#dbb657] border-l-2 border-[#dbb657] font-semibold"
+                      : "text-gray-400 hover:text-gray-200 hover:bg-[#141824]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Icon className={`w-4 h-4 ${isActive ? "text-[#dbb657]" : "text-gray-500"}`} />
+                    <span>{item.label}</span>
+                  </div>
+                  {item.badge && (
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded-xs font-mono ${
+                      isActive ? "bg-[#dbb657]/30 text-white" : "bg-gray-800 text-gray-400"
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="mt-auto p-4 border-t border-gray-800 text-[11px] text-gray-500">
+            <p className="font-semibold text-gray-400">Backend Status:</p>
+            <p className="mt-1 flex items-center gap-1.5">
+              <span className={`h-2 w-2 rounded-full ${config.firebase?.enabled ? "bg-emerald-500" : "bg-amber-500"}`}></span>
+              <span>{config.firebase?.enabled ? "Firebase Firestore Connected" : "Local Real-Time Storage"}</span>
+            </p>
+          </div>
+        </aside>
+
+        {/* CONTENT AREA */}
+        <main className="flex-1 overflow-y-auto p-8 bg-[#0c0d12]">
+          
+          {/* TAB 1: DASHBOARD & VISITORS */}
+          {activeTab === "dashboard" && (
+            <div className="space-y-6 max-w-5xl">
+              <div>
+                <h2 className="text-xl font-bold font-serif text-white uppercase tracking-wide">
+                  Chamber Analytics & Real-Time Overview
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Track website traffic, lead inquiries, and chamber reach across jurisdictions.
+                </p>
+              </div>
+
+              {/* STAT CARDS */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-1">
+                  <span className="text-[10px] uppercase font-mono text-gray-500 tracking-wider">Total Page Views</span>
+                  <p className="text-3xl font-bold font-serif text-[#dbb657]">{visitorStats.totalVisits}</p>
+                  <span className="text-[10px] text-emerald-400 flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Live Visitor Counter
+                  </span>
+                </div>
+
+                <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-1">
+                  <span className="text-[10px] uppercase font-mono text-gray-500 tracking-wider">Unique Visitors</span>
+                  <p className="text-3xl font-bold font-serif text-white">{visitorStats.uniqueVisitors}</p>
+                  <span className="text-[10px] text-gray-400">Direct & Referral Sessions</span>
+                </div>
+
+                <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-1">
+                  <span className="text-[10px] uppercase font-mono text-gray-500 tracking-wider">Consultation Leads</span>
+                  <p className="text-3xl font-bold font-serif text-amber-300">{leads.length}</p>
+                  <span className="text-[10px] text-amber-400">{leads.filter(l => l.status === 'new').length} New Pending</span>
+                </div>
+
+                <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-1">
+                  <span className="text-[10px] uppercase font-mono text-gray-500 tracking-wider">Official Domain</span>
+                  <p className="text-base font-bold font-mono text-emerald-400 truncate">arunabhbanerjee.com</p>
+                  <span className="text-[10px] text-gray-400">Canonical SEO Target</span>
+                </div>
+              </div>
+
+              {/* VISITOR COUNTER MANUAL OVERRIDE */}
+              <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-4">
+                <h3 className="text-sm font-bold text-white uppercase font-serif tracking-wider">
+                  Visitor Counter Adjustment
+                </h3>
+                <p className="text-xs text-gray-400">
+                  Set baseline counter values to reflect historical visits before portal migration.
+                </p>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Total Visits</label>
+                    <input
+                      type="number"
+                      value={visitorStats.totalVisits}
+                      onChange={(e) => setVisitorStats(prev => ({ ...prev, totalVisits: parseInt(e.target.value) || 0 }))}
+                      className="px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono rounded-xs w-36 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Unique Visitors</label>
+                    <input
+                      type="number"
+                      value={visitorStats.uniqueVisitors}
+                      onChange={(e) => setVisitorStats(prev => ({ ...prev, uniqueVisitors: parseInt(e.target.value) || 0 }))}
+                      className="px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono rounded-xs w-36 text-sm"
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      cmsService.setVisitorCount(visitorStats.totalVisits, visitorStats.uniqueVisitors);
+                      setSaveStatus("Visitor counters updated!");
+                      setTimeout(() => setSaveStatus(""), 3000);
+                    }}
+                    className="mt-5 px-4 py-2 bg-gray-800 hover:bg-[#dbb657] hover:text-black text-xs font-bold uppercase rounded-xs transition-colors cursor-pointer"
+                  >
+                    Apply Counter
+                  </button>
+                </div>
+              </div>
+
+              {/* RECENT VISITOR LOGS */}
+              <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-3">
+                <h3 className="text-sm font-bold text-white uppercase font-serif tracking-wider">
+                  Recent Visitor Sessions
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-gray-800 text-gray-500 font-mono text-[10px] uppercase">
+                        <th className="py-2 px-3">Timestamp</th>
+                        <th className="py-2 px-3">Target Route</th>
+                        <th className="py-2 px-3">Device</th>
+                        <th className="py-2 px-3">Referrer</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800/60 font-mono">
+                      {visitorStats.recentLogs && visitorStats.recentLogs.length > 0 ? (
+                        visitorStats.recentLogs.slice(0, 10).map((log) => (
+                          <tr key={log.id} className="hover:bg-gray-800/20">
+                            <td className="py-2.5 px-3 text-gray-400">{new Date(log.timestamp).toLocaleString()}</td>
+                            <td className="py-2.5 px-3 text-[#dbb657]">{log.page}</td>
+                            <td className="py-2.5 px-3 text-gray-300">{log.device}</td>
+                            <td className="py-2.5 px-3 text-gray-500 truncate max-w-xs">{log.referrer}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={4} className="py-4 text-center text-gray-500 font-sans">
+                            No visitor records logged yet. Visits will record automatically as users browse.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: BOOKING LEADS */}
+          {activeTab === "leads" && (
+            <div className="space-y-6 max-w-6xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-bold font-serif text-white uppercase tracking-wide">
+                    Legal Consultation Bookings & Leads
+                  </h2>
+                  <p className="text-xs text-gray-400">
+                    Real-time lead submissions captured from the website consultation form.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleExportCSV}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-xs font-semibold rounded-xs transition-colors cursor-pointer text-gray-200"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Export to CSV</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* SEARCH & FILTERS */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-gray-500 absolute left-3 top-2.5" />
+                  <input
+                    type="text"
+                    placeholder="Search by client name, phone, case type..."
+                    value={searchLeadQuery}
+                    onChange={(e) => setSearchLeadQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-[#12141c] border border-gray-800 focus:border-[#dbb657] text-xs text-white rounded-xs outline-none"
+                  />
+                </div>
+                <select
+                  value={leadStatusFilter}
+                  onChange={(e) => setLeadStatusFilter(e.target.value)}
+                  className="px-3 py-2 bg-[#12141c] border border-gray-800 text-xs text-gray-300 rounded-xs outline-none"
+                >
+                  <option value="all">All Statuses ({leads.length})</option>
+                  <option value="new">New ({leads.filter(l => l.status === 'new').length})</option>
+                  <option value="contacted">Contacted ({leads.filter(l => l.status === 'contacted').length})</option>
+                  <option value="consultation_scheduled">Scheduled ({leads.filter(l => l.status === 'consultation_scheduled').length})</option>
+                  <option value="closed">Closed ({leads.filter(l => l.status === 'closed').length})</option>
+                </select>
+              </div>
+
+              {/* LEADS TABLE */}
+              <div className="bg-[#12141c] border border-gray-800 rounded-xs overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-gray-800 bg-[#0f1118] text-gray-400 font-mono text-[10px] uppercase">
+                        <th className="py-3 px-4">Client Name</th>
+                        <th className="py-3 px-4">Phone / WhatsApp</th>
+                        <th className="py-3 px-4">Case Category</th>
+                        <th className="py-3 px-4">Preferred Date</th>
+                        <th className="py-3 px-4">Urgent</th>
+                        <th className="py-3 px-4">Status</th>
+                        <th className="py-3 px-4">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800/80">
+                      {filteredLeads.length > 0 ? (
+                        filteredLeads.map((lead) => (
+                          <tr key={lead.id} className="hover:bg-gray-800/30 transition-colors">
+                            <td className="py-3 px-4">
+                              <p className="font-semibold text-white">{lead.name}</p>
+                              {lead.email && <p className="text-[10px] text-gray-400">{lead.email}</p>}
+                              {lead.message && (
+                                <p className="text-[11px] text-gray-300 italic mt-1 max-w-sm line-clamp-2">
+                                  "{lead.message}"
+                                </p>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 font-mono">
+                              <p className="text-[#dbb657] font-semibold">{lead.phone}</p>
+                              <div className="flex gap-2 mt-1">
+                                <a
+                                  href={`tel:${lead.phone.replace(/\s+/g, '')}`}
+                                  className="text-[10px] text-emerald-400 hover:underline flex items-center gap-0.5"
+                                >
+                                  <Phone className="w-3 h-3" /> Call
+                                </a>
+                                <a
+                                  href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(lead.name)}%2C%20Advocate%20Arunabh%20Banerjee's%20chamber%20is%20reviewing%20your%20consultation%20request.`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-[10px] text-[#25D366] hover:underline flex items-center gap-0.5"
+                                >
+                                  <MessageSquare className="w-3 h-3" /> WhatsApp
+                                </a>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="px-2 py-1 bg-gray-800/80 text-gray-200 rounded-xs text-[10px] font-medium border border-gray-700">
+                                {lead.caseType}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 font-mono text-gray-300">
+                              {lead.date || "Not Specified"}
+                            </td>
+                            <td className="py-3 px-4">
+                              {lead.isUrgent ? (
+                                <span className="px-2 py-0.5 bg-red-950/80 border border-red-500/60 text-red-400 text-[10px] font-bold rounded-xs">
+                                  URGENT
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-gray-500">Normal</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              <select
+                                value={lead.status}
+                                onChange={(e) => handleLeadStatusChange(lead.id, e.target.value as any)}
+                                className={`text-[10px] font-bold uppercase px-2 py-1 rounded-xs border outline-none ${
+                                  lead.status === 'new' 
+                                    ? 'bg-amber-950/80 border-amber-500/60 text-amber-300' 
+                                    : lead.status === 'contacted'
+                                    ? 'bg-blue-950/80 border-blue-500/60 text-blue-300'
+                                    : lead.status === 'consultation_scheduled'
+                                    ? 'bg-emerald-950/80 border-emerald-500/60 text-emerald-300'
+                                    : 'bg-gray-800 border-gray-600 text-gray-400'
+                                }`}
+                              >
+                                <option value="new">New</option>
+                                <option value="contacted">Contacted</option>
+                                <option value="consultation_scheduled">Scheduled</option>
+                                <option value="closed">Closed</option>
+                              </select>
+                            </td>
+                            <td className="py-3 px-4">
+                              <button
+                                onClick={() => handleDeleteLead(lead.id)}
+                                className="p-1.5 text-gray-500 hover:text-red-400 transition-colors"
+                                title="Delete Lead"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={7} className="py-8 text-center text-gray-500">
+                            No booking leads matching your search criteria.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: SITE TEXTS & BIO */}
+          {activeTab === "texts" && (
+            <div className="space-y-6 max-w-4xl">
+              <div>
+                <h2 className="text-xl font-bold font-serif text-white uppercase tracking-wide">
+                  Hero Banner & Chamber Texts
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Edit all titles, slogans, court references, and chamber biographies in real-time.
+                </p>
+              </div>
+
+              <div className="p-6 bg-[#12141c] border border-gray-800 rounded-xs space-y-4">
+                <h3 className="text-sm font-bold text-[#dbb657] uppercase font-serif tracking-wider">
+                  Hero Header Content
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Tagline</label>
+                    <input
+                      type="text"
+                      value={config.hero.tagline}
+                      onChange={(e) => setConfig({ ...config, hero: { ...config.hero, tagline: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Title Prefix</label>
+                    <input
+                      type="text"
+                      value={config.hero.titlePrefix}
+                      onChange={(e) => setConfig({ ...config, hero: { ...config.hero, titlePrefix: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Advocate Name</label>
+                    <input
+                      type="text"
+                      value={config.hero.name}
+                      onChange={(e) => setConfig({ ...config, hero: { ...config.hero, name: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-[#dbb657] font-serif font-bold text-sm rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Primary Role Badge</label>
+                    <input
+                      type="text"
+                      value={config.hero.roleBadge}
+                      onChange={(e) => setConfig({ ...config, hero: { ...config.hero, roleBadge: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Secondary Role Badge</label>
+                    <input
+                      type="text"
+                      value={config.hero.secondaryBadge}
+                      onChange={(e) => setConfig({ ...config, hero: { ...config.hero, secondaryBadge: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Experience Years</label>
+                    <input
+                      type="text"
+                      value={config.hero.yearsExperience}
+                      onChange={(e) => setConfig({ ...config, hero: { ...config.hero, yearsExperience: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Court Jurisdictions Line</label>
+                  <input
+                    type="text"
+                    value={config.hero.courtLine}
+                    onChange={(e) => setConfig({ ...config, hero: { ...config.hero, courtLine: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Human Rights Office Line</label>
+                  <input
+                    type="text"
+                    value={config.hero.humanRightsLine}
+                    onChange={(e) => setConfig({ ...config, hero: { ...config.hero, humanRightsLine: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Chamber Litigation Bio</label>
+                  <textarea
+                    rows={4}
+                    value={config.hero.bioText}
+                    onChange={(e) => setConfig({ ...config, hero: { ...config.hero, bioText: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657] leading-relaxed"
+                  />
+                </div>
+              </div>
+
+              {/* HUMAN RIGHTS & LEADERSHIP SECTION */}
+              <div className="p-6 bg-[#12141c] border border-gray-800 rounded-xs space-y-4">
+                <h3 className="text-sm font-bold text-[#dbb657] uppercase font-serif tracking-wider">
+                  Human Rights & CPDR Section
+                </h3>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Section Title</label>
+                  <input
+                    type="text"
+                    value={config.leadership.sectionTitle}
+                    onChange={(e) => setConfig({ ...config, leadership: { ...config.leadership, sectionTitle: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Presidential Badge</label>
+                  <input
+                    type="text"
+                    value={config.leadership.badge}
+                    onChange={(e) => setConfig({ ...config, leadership: { ...config.leadership, badge: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Keynote Quote</label>
+                  <textarea
+                    rows={2}
+                    value={config.leadership.quote}
+                    onChange={(e) => setConfig({ ...config, leadership: { ...config.leadership, quote: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Leadership Description</label>
+                  <textarea
+                    rows={3}
+                    value={config.leadership.description}
+                    onChange={(e) => setConfig({ ...config, leadership: { ...config.leadership, description: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: PRACTICE & MATTERS */}
+          {activeTab === "practice" && (
+            <div className="space-y-6 max-w-5xl">
+              <div>
+                <h2 className="text-xl font-bold font-serif text-white uppercase tracking-wide">
+                  Practice Areas & Landmark Matters
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Manage legal specializations, high-stakes trial services, and Supreme Court case outcomes.
+                </p>
+              </div>
+
+              {/* PRACTICE AREAS */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-[#dbb657] uppercase font-serif tracking-wider">
+                    Legal Practice Areas ({config.practiceAreas.length})
+                  </h3>
+                  <button
+                    onClick={() => {
+                      const newId = "practice_" + Date.now();
+                      setConfig({
+                        ...config,
+                        practiceAreas: [
+                          ...config.practiceAreas,
+                          { id: newId, title: "New Legal Practice Area", description: "Comprehensive representation and statutory defense." }
+                        ]
+                      });
+                    }}
+                    className="flex items-center gap-1 px-3 py-1 bg-gray-800 hover:bg-[#dbb657] hover:text-black text-xs font-semibold rounded-xs transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Practice Area
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {config.practiceAreas.map((pa, idx) => (
+                    <div key={pa.id} className="p-4 bg-[#12141c] border border-gray-800 rounded-xs space-y-2 relative group">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono text-gray-500">#{idx + 1}</span>
+                        <button
+                          onClick={() => {
+                            setConfig({
+                              ...config,
+                              practiceAreas: config.practiceAreas.filter(p => p.id !== pa.id)
+                            });
+                          }}
+                          className="text-gray-500 hover:text-red-400 p-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={pa.title}
+                        onChange={(e) => {
+                          const updated = [...config.practiceAreas];
+                          updated[idx].title = e.target.value;
+                          setConfig({ ...config, practiceAreas: updated });
+                        }}
+                        className="w-full px-2.5 py-1.5 bg-[#08090d] border border-gray-700 text-white text-xs font-bold rounded-xs outline-none focus:border-[#dbb657]"
+                      />
+                      <textarea
+                        rows={2}
+                        value={pa.description}
+                        onChange={(e) => {
+                          const updated = [...config.practiceAreas];
+                          updated[idx].description = e.target.value;
+                          setConfig({ ...config, practiceAreas: updated });
+                        }}
+                        className="w-full px-2.5 py-1.5 bg-[#08090d] border border-gray-700 text-gray-300 text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* NOTABLE MATTERS */}
+              <div className="space-y-4 pt-6 border-t border-gray-800">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-[#dbb657] uppercase font-serif tracking-wider">
+                    Notable Judicial Matters & Verdicts ({config.notableMatters.length})
+                  </h3>
+                  <button
+                    onClick={() => {
+                      const newId = "matter_" + Date.now();
+                      setConfig({
+                        ...config,
+                        notableMatters: [
+                          ...config.notableMatters,
+                          { id: newId, title: "Landmark Judgment Title", caseNo: "W.P.(Crl.) / Supreme Court of India", outcome: "Favorable outcome granted." }
+                        ]
+                      });
+                    }}
+                    className="flex items-center gap-1 px-3 py-1 bg-gray-800 hover:bg-[#dbb657] hover:text-black text-xs font-semibold rounded-xs transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Verdict
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {config.notableMatters.map((matter, idx) => (
+                    <div key={matter.id} className="p-4 bg-[#12141c] border border-gray-800 rounded-xs space-y-2 relative group">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono text-gray-500">#{idx + 1}</span>
+                        <button
+                          onClick={() => {
+                            setConfig({
+                              ...config,
+                              notableMatters: config.notableMatters.filter(m => m.id !== matter.id)
+                            });
+                          }}
+                          className="text-gray-500 hover:text-red-400 p-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={matter.title}
+                        onChange={(e) => {
+                          const updated = [...config.notableMatters];
+                          updated[idx].title = e.target.value;
+                          setConfig({ ...config, notableMatters: updated });
+                        }}
+                        placeholder="Matter Title"
+                        className="w-full px-2.5 py-1.5 bg-[#08090d] border border-gray-700 text-white text-xs font-bold rounded-xs outline-none focus:border-[#dbb657]"
+                      />
+                      <input
+                        type="text"
+                        value={matter.caseNo}
+                        onChange={(e) => {
+                          const updated = [...config.notableMatters];
+                          updated[idx].caseNo = e.target.value;
+                          setConfig({ ...config, notableMatters: updated });
+                        }}
+                        placeholder="Court / Case Citation"
+                        className="w-full px-2.5 py-1.5 bg-[#08090d] border border-gray-700 text-[#dbb657] font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                      />
+                      <textarea
+                        rows={2}
+                        value={matter.outcome}
+                        onChange={(e) => {
+                          const updated = [...config.notableMatters];
+                          updated[idx].outcome = e.target.value;
+                          setConfig({ ...config, notableMatters: updated });
+                        }}
+                        placeholder="Judicial Relief / Outcome"
+                        className="w-full px-2.5 py-1.5 bg-[#08090d] border border-gray-700 text-gray-300 text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: CONTACTS, NUMBERS & ADDRESSES */}
+          {activeTab === "contacts" && (
+            <div className="space-y-6 max-w-4xl">
+              <div>
+                <h2 className="text-xl font-bold font-serif text-white uppercase tracking-wide">
+                  Chamber Numbers, WhatsApp & Addresses
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Update primary phone lines, WhatsApp integration, and chamber offices across Delhi.
+                </p>
+              </div>
+
+              <div className="p-6 bg-[#12141c] border border-gray-800 rounded-xs space-y-4">
+                <h3 className="text-sm font-bold text-[#dbb657] uppercase font-serif tracking-wider">
+                  Direct Phone & Digital Lines
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Primary Mobile (Call Target)</label>
+                    <input
+                      type="text"
+                      value={config.contacts.primaryMobile}
+                      onChange={(e) => setConfig({ ...config, contacts: { ...config.contacts, primaryMobile: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Mobile Display Text</label>
+                    <input
+                      type="text"
+                      value={config.contacts.displayMobile}
+                      onChange={(e) => setConfig({ ...config, contacts: { ...config.contacts, displayMobile: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-[#dbb657] font-mono font-bold text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">WhatsApp Direct Number (e.g. 919810703335)</label>
+                    <input
+                      type="text"
+                      value={config.contacts.whatsappNumber}
+                      onChange={(e) => setConfig({ ...config, contacts: { ...config.contacts, whatsappNumber: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-emerald-400 font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Chamber Email</label>
+                    <input
+                      type="email"
+                      value={config.contacts.chamberEmail}
+                      onChange={(e) => setConfig({ ...config, contacts: { ...config.contacts, chamberEmail: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Pre-filled WhatsApp Message</label>
+                  <textarea
+                    rows={2}
+                    value={config.contacts.whatsappMessage}
+                    onChange={(e) => setConfig({ ...config, contacts: { ...config.contacts, whatsappMessage: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+              </div>
+
+              {/* CHAMBER ADDRESSES */}
+              <div className="p-6 bg-[#12141c] border border-gray-800 rounded-xs space-y-4">
+                <h3 className="text-sm font-bold text-[#dbb657] uppercase font-serif tracking-wider">
+                  Chamber Physical Locations
+                </h3>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Supreme Court Compound Chamber</label>
+                  <input
+                    type="text"
+                    value={config.contacts.supremeCourtChamber}
+                    onChange={(e) => setConfig({ ...config, contacts: { ...config.contacts, supremeCourtChamber: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Saket Courts Complex Chamber</label>
+                  <input
+                    type="text"
+                    value={config.contacts.saketCourtsChamber}
+                    onChange={(e) => setConfig({ ...config, contacts: { ...config.contacts, saketCourtsChamber: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Office Timings</label>
+                  <input
+                    type="text"
+                    value={config.contacts.officeHours}
+                    onChange={(e) => setConfig({ ...config, contacts: { ...config.contacts, officeHours: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Emergency Listing Notice</label>
+                  <input
+                    type="text"
+                    value={config.contacts.emergencyListingNote}
+                    onChange={(e) => setConfig({ ...config, contacts: { ...config.contacts, emergencyListingNote: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 6: BUTTONS & ACTION LINKS */}
+          {activeTab === "buttons" && (
+            <div className="space-y-6 max-w-4xl">
+              <div>
+                <h2 className="text-xl font-bold font-serif text-white uppercase tracking-wide">
+                  Action Buttons & CTAs
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Customize button labels across hero, navigation, and consultation sections.
+                </p>
+              </div>
+
+              <div className="p-6 bg-[#12141c] border border-gray-800 rounded-xs space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Call Advocate Button</label>
+                    <input
+                      type="text"
+                      value={config.buttons.callAdvocateText}
+                      onChange={(e) => setConfig({ ...config, buttons: { ...config.buttons, callAdvocateText: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">WhatsApp Direct Button</label>
+                    <input
+                      type="text"
+                      value={config.buttons.whatsappDirectText}
+                      onChange={(e) => setConfig({ ...config, buttons: { ...config.buttons, whatsappDirectText: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Book Case Button</label>
+                    <input
+                      type="text"
+                      value={config.buttons.bookCaseText}
+                      onChange={(e) => setConfig({ ...config, buttons: { ...config.buttons, bookCaseText: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Reserve Slot Button</label>
+                    <input
+                      type="text"
+                      value={config.buttons.reserveSlotText}
+                      onChange={(e) => setConfig({ ...config, buttons: { ...config.buttons, reserveSlotText: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">vCard Contact Download Button</label>
+                    <input
+                      type="text"
+                      value={config.buttons.downloadVcardText}
+                      onChange={(e) => setConfig({ ...config, buttons: { ...config.buttons, downloadVcardText: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 7: PICTURES & MEDIA */}
+          {activeTab === "pictures" && (
+            <div className="space-y-6 max-w-4xl">
+              <div>
+                <h2 className="text-xl font-bold font-serif text-white uppercase tracking-wide">
+                  Portraits & Visual Assets
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Change Advocate Arunabh Banerjee's official portrait via direct image upload or image URL.
+                </p>
+              </div>
+
+              <div className="p-6 bg-[#12141c] border border-gray-800 rounded-xs space-y-6">
+                
+                {/* PORTRAIT PREVIEW & UPLOAD */}
+                <div className="flex flex-col sm:flex-row gap-6 items-start">
+                  <div className="w-44 aspect-[3/4] border-2 border-[#dbb657] rounded-sm overflow-hidden bg-black flex-shrink-0 shadow-lg relative group">
+                    <img
+                      src={config.hero.portraitUrl || "/assets/images/Arunabh_Banerjee.jpeg"}
+                      alt="Advocate Arunabh Banerjee Portrait Preview"
+                      className="w-full h-full object-cover object-top"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/assets/images/arunabh_portrait_1781436119050.jpg";
+                      }}
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-black/80 py-1 text-center text-[10px] text-[#dbb657] font-mono">
+                      Active Portrait
+                    </div>
+                  </div>
+
+                  <div className="flex-1 space-y-4">
+                    <div>
+                      <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Upload New Portrait Photo (from Computer)</label>
+                      <label className="flex items-center gap-2 px-4 py-3 bg-[#08090d] border border-dashed border-gray-700 hover:border-[#dbb657] rounded-xs cursor-pointer text-xs text-gray-300 transition-colors">
+                        <Upload className="w-4 h-4 text-[#dbb657]" />
+                        <span>Choose Image File (JPEG, PNG, WebP)</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageFileUpload}
+                          className="hidden"
+                        />
+                      </label>
+                      <p className="text-[10px] text-gray-500 mt-1">
+                        Select a high-resolution photo. It will be converted and stored securely.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Or Paste Image URL</label>
+                      <input
+                        type="url"
+                        placeholder="https://example.com/arunabh_portrait.jpg"
+                        value={config.hero.portraitUrl}
+                        onChange={(e) => setConfig({ ...config, hero: { ...config.hero, portraitUrl: e.target.value } })}
+                        className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                      />
+                    </div>
+
+                    {config.hero.portraitUrl && (
+                      <button
+                        onClick={() => setConfig({ ...config, hero: { ...config.hero, portraitUrl: "" } })}
+                        className="text-xs text-amber-400 hover:underline"
+                      >
+                        Reset to Default Chamber Portrait
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* TAB 8: THEME & BRANDING COLORS */}
+          {activeTab === "theme" && (
+            <div className="space-y-6 max-w-4xl">
+              <div>
+                <h2 className="text-xl font-bold font-serif text-white uppercase tracking-wide">
+                  Color Palette & Chamber Aesthetics
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Fine-tune the Supreme Court gold gradients, accent highlights, and contrast hues. Changes apply instantly in real-time.
+                </p>
+              </div>
+
+              <div className="p-6 bg-[#12141c] border border-gray-800 rounded-xs space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  
+                  {/* Primary Gold */}
+                  <div className="p-4 bg-[#0a0b10] border border-gray-800 rounded-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-white">Primary Gold Accent</label>
+                      <span className="font-mono text-xs text-[#dbb657]">{config.theme.primaryGold}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={config.theme.primaryGold}
+                        onChange={(e) => {
+                          const updated = { ...config.theme, primaryGold: e.target.value };
+                          setConfig({ ...config, theme: updated });
+                          cmsService.applyTheme(updated);
+                        }}
+                        className="h-10 w-16 bg-transparent border border-gray-700 rounded-xs cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={config.theme.primaryGold}
+                        onChange={(e) => {
+                          const updated = { ...config.theme, primaryGold: e.target.value };
+                          setConfig({ ...config, theme: updated });
+                          cmsService.applyTheme(updated);
+                        }}
+                        className="flex-1 px-3 py-2 bg-[#12141c] border border-gray-700 text-xs text-white font-mono rounded-xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Secondary Gold */}
+                  <div className="p-4 bg-[#0a0b10] border border-gray-800 rounded-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-white">Secondary Burnished Gold</label>
+                      <span className="font-mono text-xs text-amber-500">{config.theme.secondaryGold}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={config.theme.secondaryGold}
+                        onChange={(e) => {
+                          const updated = { ...config.theme, secondaryGold: e.target.value };
+                          setConfig({ ...config, theme: updated });
+                          cmsService.applyTheme(updated);
+                        }}
+                        className="h-10 w-16 bg-transparent border border-gray-700 rounded-xs cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={config.theme.secondaryGold}
+                        onChange={(e) => {
+                          const updated = { ...config.theme, secondaryGold: e.target.value };
+                          setConfig({ ...config, theme: updated });
+                          cmsService.applyTheme(updated);
+                        }}
+                        className="flex-1 px-3 py-2 bg-[#12141c] border border-gray-700 text-xs text-white font-mono rounded-xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Dark Background */}
+                  <div className="p-4 bg-[#0a0b10] border border-gray-800 rounded-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-white">Chamber Deep Charcoal Background</label>
+                      <span className="font-mono text-xs text-gray-400">{config.theme.darkBg}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={config.theme.darkBg}
+                        onChange={(e) => {
+                          const updated = { ...config.theme, darkBg: e.target.value };
+                          setConfig({ ...config, theme: updated });
+                          cmsService.applyTheme(updated);
+                        }}
+                        className="h-10 w-16 bg-transparent border border-gray-700 rounded-xs cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={config.theme.darkBg}
+                        onChange={(e) => {
+                          const updated = { ...config.theme, darkBg: e.target.value };
+                          setConfig({ ...config, theme: updated });
+                          cmsService.applyTheme(updated);
+                        }}
+                        className="flex-1 px-3 py-2 bg-[#12141c] border border-gray-700 text-xs text-white font-mono rounded-xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Card Background */}
+                  <div className="p-4 bg-[#0a0b10] border border-gray-800 rounded-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-white">Panel & Card Background</label>
+                      <span className="font-mono text-xs text-gray-400">{config.theme.cardBg}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={config.theme.cardBg}
+                        onChange={(e) => {
+                          const updated = { ...config.theme, cardBg: e.target.value };
+                          setConfig({ ...config, theme: updated });
+                          cmsService.applyTheme(updated);
+                        }}
+                        className="h-10 w-16 bg-transparent border border-gray-700 rounded-xs cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={config.theme.cardBg}
+                        onChange={(e) => {
+                          const updated = { ...config.theme, cardBg: e.target.value };
+                          setConfig({ ...config, theme: updated });
+                          cmsService.applyTheme(updated);
+                        }}
+                        className="flex-1 px-3 py-2 bg-[#12141c] border border-gray-700 text-xs text-white font-mono rounded-xs"
+                      />
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* PRESET PALETTES */}
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-2">Preset Royal Palettes</label>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => {
+                        const royalGold = {
+                          primaryGold: "#dbb657",
+                          secondaryGold: "#b28d2f",
+                          darkBg: "#0c0d12",
+                          cardBg: "#12141c",
+                          goldGlow: "rgba(219, 182, 87, 0.15)"
+                        };
+                        setConfig({ ...config, theme: royalGold });
+                        cmsService.applyTheme(royalGold);
+                      }}
+                      className="px-3 py-1.5 bg-[#171a24] hover:bg-[#202534] border border-[#dbb657]/40 rounded-xs text-xs text-[#dbb657]"
+                    >
+                      Imperial Supreme Gold (Default)
+                    </button>
+                    <button
+                      onClick={() => {
+                        const platinum = {
+                          primaryGold: "#e2c974",
+                          secondaryGold: "#9c7c2b",
+                          darkBg: "#08090d",
+                          cardBg: "#0f121a",
+                          goldGlow: "rgba(226, 201, 116, 0.18)"
+                        };
+                        setConfig({ ...config, theme: platinum });
+                        cmsService.applyTheme(platinum);
+                      }}
+                      className="px-3 py-1.5 bg-[#171a24] hover:bg-[#202534] border border-gray-700 rounded-xs text-xs text-amber-200"
+                    >
+                      High Court Gilded Bronze
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* TAB 9: SEO & DOMAIN (arunabhbanerjee.com) */}
+          {activeTab === "seo" && (
+            <div className="space-y-6 max-w-4xl">
+              <div>
+                <h2 className="text-xl font-bold font-serif text-white uppercase tracking-wide">
+                  SEO Optimization & Custom Domain
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Targeted SEO metadata for custom domain <span className="text-amber-300 font-mono">arunabhbanerjee.com</span> to rank on Google.
+                </p>
+              </div>
+
+              {/* GOOGLE SEARCH PREVIEW SNIPPET */}
+              <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-2">
+                <span className="text-[10px] uppercase font-mono text-gray-400 tracking-wider">
+                  Live Google Search Snippet Preview
+                </span>
+                <div className="p-4 bg-[#0a0b10] border border-gray-700 rounded-xs space-y-1 font-sans">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                    <Globe className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>https://arunabhbanerjee.com</span>
+                  </div>
+                  <h4 className="text-base text-blue-400 font-medium hover:underline cursor-pointer">
+                    {config.seo.siteTitle}
+                  </h4>
+                  <p className="text-xs text-gray-300 leading-snug">
+                    {config.seo.metaDescription}
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-6 bg-[#12141c] border border-gray-800 rounded-xs space-y-4">
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Target Canonical Domain</label>
+                  <input
+                    type="text"
+                    value={config.seo.canonicalDomain}
+                    onChange={(e) => setConfig({ ...config, seo: { ...config.seo, canonicalDomain: e.target.value } })}
+                    placeholder="https://arunabhbanerjee.com"
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-emerald-400 font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Canonical link ensures search engines attribute all ranking authority to your domain arunabhbanerjee.com.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Meta Title Tag (&lt;title&gt;)</label>
+                  <input
+                    type="text"
+                    value={config.seo.siteTitle}
+                    onChange={(e) => setConfig({ ...config, seo: { ...config.seo, siteTitle: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Meta Description Tag</label>
+                  <textarea
+                    rows={3}
+                    value={config.seo.metaDescription}
+                    onChange={(e) => setConfig({ ...config, seo: { ...config.seo, metaDescription: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                  <p className="text-[10px] text-gray-500 mt-1">Recommended length: 140–160 characters.</p>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">SEO Target Keywords (comma separated)</label>
+                  <textarea
+                    rows={2}
+                    value={config.seo.keywords}
+                    onChange={(e) => setConfig({ ...config, seo: { ...config.seo, keywords: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Social Media Share Image (og:image URL)</label>
+                  <input
+                    type="url"
+                    value={config.seo.ogImage}
+                    onChange={(e) => setConfig({ ...config, seo: { ...config.seo, ogImage: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 10: FIREBASE INTEGRATION */}
+          {activeTab === "firebase" && (
+            <div className="space-y-6 max-w-4xl">
+              <div>
+                <h2 className="text-xl font-bold font-serif text-white uppercase tracking-wide">
+                  Firebase Cloud Backend Integration
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Connect your Google Cloud Firebase project for cross-device real-time sync and cloud database persistence.
+                </p>
+              </div>
+
+              {/* CURRENT STATUS */}
+              <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs flex items-center justify-between">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono uppercase text-gray-400 tracking-wider">Current Backend Status</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`h-2.5 w-2.5 rounded-full ${config.firebase?.enabled ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`}></span>
+                    <span className="text-sm font-bold text-white">
+                      {config.firebase?.enabled ? "Firebase Cloud Firestore Enabled" : "Local Real-Time Engine (Active & Ready for Firebase)"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    {config.firebase?.enabled 
+                      ? `Connected to Firestore project: ${config.firebase.projectId}` 
+                      : "All texts, leads, and visitor counters are currently preserved in browser storage. Paste your Firebase keys below whenever you create your project!"
+                    }
+                  </p>
+                </div>
+
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={config.firebase?.enabled || false}
+                    onChange={(e) => {
+                      setConfig({
+                        ...config,
+                        firebase: {
+                          ...config.firebase,
+                          enabled: e.target.checked
+                        }
+                      });
+                    }}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                </label>
+              </div>
+
+              {/* FIREBASE SETUP INSTRUCTIONS */}
+              <div className="p-5 bg-gradient-to-r from-amber-950/20 to-transparent border border-amber-500/30 rounded-xs space-y-2">
+                <h4 className="text-xs font-bold text-[#dbb657] uppercase font-mono flex items-center gap-1.5">
+                  <Database className="w-4 h-4 text-[#dbb657]" />
+                  How to get your Firebase configuration:
+                </h4>
+                <ol className="text-xs text-gray-300 list-decimal list-inside space-y-1 pl-1">
+                  <li>Go to <a href="https://console.firebase.google.com" target="_blank" rel="noreferrer" className="text-amber-300 underline">console.firebase.google.com</a> and click <strong>Create a project</strong>.</li>
+                  <li>In project dashboard, click <strong>Web (&lt;/&gt;)</strong> to register an app.</li>
+                  <li>Enable <strong>Firestore Database</strong> from the Build menu (start in Test mode or Production mode).</li>
+                  <li>Copy the configuration keys shown in the Firebase SDK snippet and paste them below.</li>
+                </ol>
+              </div>
+
+              {/* CONFIG INPUTS */}
+              <div className="p-6 bg-[#12141c] border border-gray-800 rounded-xs space-y-4">
+                <h3 className="text-sm font-bold text-[#dbb657] uppercase font-serif tracking-wider">
+                  Firebase Credentials & Keys
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">API Key (apiKey)</label>
+                    <input
+                      type="text"
+                      placeholder="AIzaSy..."
+                      value={config.firebase?.apiKey || ""}
+                      onChange={(e) => setConfig({ ...config, firebase: { ...config.firebase, apiKey: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Project ID (projectId)</label>
+                    <input
+                      type="text"
+                      placeholder="arunabh-banerjee-legal"
+                      value={config.firebase?.projectId || ""}
+                      onChange={(e) => setConfig({ ...config, firebase: { ...config.firebase, projectId: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Auth Domain (authDomain)</label>
+                    <input
+                      type="text"
+                      placeholder="arunabh-banerjee-legal.firebaseapp.com"
+                      value={config.firebase?.authDomain || ""}
+                      onChange={(e) => setConfig({ ...config, firebase: { ...config.firebase, authDomain: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Storage Bucket (storageBucket)</label>
+                    <input
+                      type="text"
+                      placeholder="arunabh-banerjee-legal.appspot.com"
+                      value={config.firebase?.storageBucket || ""}
+                      onChange={(e) => setConfig({ ...config, firebase: { ...config.firebase, storageBucket: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Messaging Sender ID</label>
+                    <input
+                      type="text"
+                      placeholder="1234567890"
+                      value={config.firebase?.messagingSenderId || ""}
+                      onChange={(e) => setConfig({ ...config, firebase: { ...config.firebase, messagingSenderId: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">App ID (appId)</label>
+                    <input
+                      type="text"
+                      placeholder="1:1234567890:web:abcdef"
+                      value={config.firebase?.appId || ""}
+                      onChange={(e) => setConfig({ ...config, firebase: { ...config.firebase, appId: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center gap-3">
+                  <button
+                    onClick={handleTestFirebase}
+                    className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs uppercase tracking-wider rounded-xs transition-colors cursor-pointer"
+                  >
+                    Test & Save Firebase Connection
+                  </button>
+
+                  {firebaseStatusMsg && (
+                    <span className="text-xs text-amber-300 font-mono">
+                      {firebaseStatusMsg}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+        </main>
+      </div>
+
+    </div>
+  );
+}

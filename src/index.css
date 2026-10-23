@@ -1,0 +1,185 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Cinzel", Georgia, serif;
+  --font-display: "Playfair Display", serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* Custom scrollbar styling for a luxurious finish */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f1115;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #8e7037;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #c5a85c;
+}
+
+/* Custom continuous shimmer for metallic text */
+@keyframes metallic-glow {
+  0%, 100% {
+    text-shadow: 0 0 4px rgba(212, 175, 55, 0.2), 0 0 10px rgba(212, 175, 55, 0.1);
+  }
+  50% {
+    text-shadow: 0 0 8px rgba(255, 223, 0, 0.4), 0 0 20px rgba(212, 175, 55, 0.2);
+  }
+}
+
+.metallic-text {
+  background: linear-gradient(135deg, #f3e7c4 0%, #dbb657 50%, #b28d2f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: metallic-glow 6s ease-in-out infinite;
+}
+
+.gold-border {
+  border-image: linear-gradient(to right, #b28d2f, #dbb657, #f3e7c4, #dbb657, #b28d2f) 1;
+}
+
+/* Decorative Classical Ornaments for Hero / Sections */
+.classical-corner {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(219, 182, 87, 0.3);
+}
+
+.classical-corner-tl {
+  top: 12px;
+  left: 12px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.classical-corner-tr {
+  top: 12px;
+  right: 12px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.classical-corner-bl {
+  bottom: 12px;
+  left: 12px;
+  border-right: none;
+  border-top: none;
+}
+
+.classical-corner-br {
+  bottom: 12px;
+  right: 12px;
+  border-left: none;
+  border-top: none;
+}
+
+/* Custom premium glow effects and floating cycles */
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+}
+
+@keyframes gold-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(219, 182, 87, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(219, 182, 87, 0.45);
+  }
+}
+
+@keyframes gold-bg-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.gold-shimmer-btn {
+  background: linear-gradient(90deg, #b28d2f, #dbb657, #f3e7c4, #dbb657, #b28d2f);
+  background-size: 200% auto;
+  animation: gold-bg-shift 4s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+.animate-gold-pulse {
+  animation: gold-pulse 3s ease-in-out infinite;
+}
+
+.card-gold-glow {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-gold-glow:hover {
+  border-color: rgba(219, 182, 87, 0.6) !important;
+  box-shadow: 0 10px 30px -10px rgba(219, 182, 87, 0.25), 0 1px 3px rgba(219, 182, 87, 0.1) !important;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: #080a0f;
+}
+
+/* Custom Cursor Trail and Hover effects */
+@media (pointer: fine) {
+  .custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 28px;
+    height: 28px;
+    background-color: transparent;
+    border: 1.5px solid rgba(219, 182, 87, 0.7);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-30%, -30%);
+    z-index: 10000;
+    will-change: transform;
+  }
+  .custom-cursor-dot {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    background-color: #dbb657;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 10001;
+    will-change: transform;
+  }
+  .custom-cursor-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(219, 182, 87, 0.05) 0%, rgba(219, 182, 87, 0) 70%);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    will-change: transform;
+  }
+}
+
+
