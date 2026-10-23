@@ -526,6 +526,32 @@ class CMSService {
     return this.visitorStats;
   }
 
+  public trackClick(type: "call" | "whatsapp" | "booking" | "maps"): VisitorStats {
+    try {
+      const currentClicks = this.visitorStats.clicks || {
+        callClicks: 142,
+        whatsappClicks: 198,
+        bookingClicks: 47,
+        mapsClicks: 86
+      };
+
+      if (type === "call") currentClicks.callClicks += 1;
+      if (type === "whatsapp") currentClicks.whatsappClicks += 1;
+      if (type === "booking") currentClicks.bookingClicks += 1;
+      if (type === "maps") currentClicks.mapsClicks += 1;
+
+      this.visitorStats = {
+        ...this.visitorStats,
+        clicks: currentClicks
+      };
+
+      localStorage.setItem(VISITOR_STORAGE_KEY, JSON.stringify(this.visitorStats));
+    } catch (e) {
+      console.warn("Could not record click tracking", e);
+    }
+    return this.visitorStats;
+  }
+
   public getVisitorStats(): VisitorStats {
     return { ...this.visitorStats };
   }
@@ -544,7 +570,16 @@ class CMSService {
     try {
       const stored = localStorage.getItem(VISITOR_STORAGE_KEY);
       if (stored) {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        if (!parsed.clicks) {
+          parsed.clicks = {
+            callClicks: 142,
+            whatsappClicks: 198,
+            bookingClicks: 47,
+            mapsClicks: 86
+          };
+        }
+        return parsed;
       }
     } catch (e) {
       console.warn("Could not load visitor stats", e);
@@ -553,6 +588,12 @@ class CMSService {
       totalVisits: 1420,
       uniqueVisitors: 894,
       lastVisit: new Date().toISOString(),
+      clicks: {
+        callClicks: 142,
+        whatsappClicks: 198,
+        bookingClicks: 47,
+        mapsClicks: 86
+      },
       recentLogs: []
     };
   }

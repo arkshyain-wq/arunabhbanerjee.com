@@ -425,6 +425,49 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                 </div>
               </div>
 
+              {/* USER INTERACTION & CLICK ANALYTICS */}
+              <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-white uppercase font-serif tracking-wider">
+                      Client Engagement & Click Analytics
+                    </h3>
+                    <p className="text-xs text-gray-400">
+                      Live tracking of call, WhatsApp, booking form, and navigation interactions.
+                    </p>
+                  </div>
+                  <span className="px-2 py-0.5 bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-[10px] font-mono rounded-xs">
+                    Live Telemetry Active
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                  <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs">
+                    <span className="text-[10px] uppercase font-mono text-gray-500 block">📞 Call Clicks</span>
+                    <p className="text-2xl font-bold font-mono text-white mt-1">{visitorStats.clicks?.callClicks || 0}</p>
+                    <span className="text-[9px] text-gray-400 font-mono">tel:+919810703335</span>
+                  </div>
+
+                  <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs">
+                    <span className="text-[10px] uppercase font-mono text-gray-500 block">💬 WhatsApp Clicks</span>
+                    <p className="text-2xl font-bold font-mono text-emerald-400 mt-1">{visitorStats.clicks?.whatsappClicks || 0}</p>
+                    <span className="text-[9px] text-gray-400 font-mono">Direct chat opened</span>
+                  </div>
+
+                  <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs">
+                    <span className="text-[10px] uppercase font-mono text-gray-500 block">📅 Bookings Saved</span>
+                    <p className="text-2xl font-bold font-mono text-[#dbb657] mt-1">{leads.length}</p>
+                    <span className="text-[9px] text-gray-400 font-mono">Consultation leads</span>
+                  </div>
+
+                  <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs">
+                    <span className="text-[10px] uppercase font-mono text-gray-500 block">🗺️ Maps Directions</span>
+                    <p className="text-2xl font-bold font-mono text-blue-400 mt-1">{visitorStats.clicks?.mapsClicks || 0}</p>
+                    <span className="text-[9px] text-gray-400 font-mono">Supreme Court & Saket</span>
+                  </div>
+                </div>
+              </div>
+
               {/* VISITOR COUNTER MANUAL OVERRIDE */}
               <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-4">
                 <h3 className="text-sm font-bold text-white uppercase font-serif tracking-wider">

@@ -48,10 +48,18 @@ export interface VisitorLog {
   device: string;
 }
 
+export interface ClickStats {
+  callClicks: number;
+  whatsappClicks: number;
+  bookingClicks: number;
+  mapsClicks: number;
+}
+
 export interface VisitorStats {
   totalVisits: number;
   uniqueVisitors: number;
   lastVisit: string;
+  clicks?: ClickStats;
   recentLogs: VisitorLog[];
 }
 
