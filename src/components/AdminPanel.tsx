@@ -2181,6 +2181,28 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                       className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
                     />
                   </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Database URL (databaseURL)</label>
+                    <input
+                      type="text"
+                      placeholder="https://meta-project-7bd88-default-rtdb.firebaseio.com"
+                      value={config.firebase?.databaseURL || ""}
+                      onChange={(e) => setConfig({ ...config, firebase: { ...config.firebase, databaseURL: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Measurement ID (measurementId)</label>
+                    <input
+                      type="text"
+                      placeholder="G-47211QE0E4"
+                      value={config.firebase?.measurementId || ""}
+                      onChange={(e) => setConfig({ ...config, firebase: { ...config.firebase, measurementId: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
                 </div>
 
                 <div className="pt-2 flex items-center gap-3">

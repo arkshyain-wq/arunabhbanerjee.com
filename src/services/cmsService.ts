@@ -15,8 +15,13 @@ import {
   getDocs, 
   query, 
   orderBy, 
-  Firestore 
+  onSnapshot,
+  deleteDoc,
+  updateDoc,
+  Firestore,
+  Unsubscribe 
 } from "firebase/firestore";
+import { getAnalytics, isSupported, Analytics } from "firebase/analytics";
 
 const CMS_STORAGE_KEY = "arunabh_cms_config_v1";
 const LEADS_STORAGE_KEY = "arunabh_leads_v1";
@@ -206,13 +211,15 @@ export const DEFAULT_CMS_CONFIG: SiteCMSConfig = {
     }
   ],
   firebase: {
-    apiKey: "",
-    authDomain: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: "",
-    enabled: false
+    apiKey: "AIzaSyCCILFKE2bblpsGH6fLEJViHao2n98h7CA",
+    authDomain: "meta-project-7bd88.firebaseapp.com",
+    databaseURL: "https://meta-project-7bd88-default-rtdb.firebaseio.com",
+    projectId: "meta-project-7bd88",
+    storageBucket: "meta-project-7bd88.firebasestorage.app",
+    messagingSenderId: "45731693003",
+    appId: "1:45731693003:web:c3c429c733d921132fb64e",
+    measurementId: "G-47211QE0E4",
+    enabled: true
   }
 };
 
@@ -228,6 +235,10 @@ class CMSService {
   private leadsSubscribers: LeadsSubscriber[] = [];
   private firebaseApp: FirebaseApp | null = null;
   private firestoreDb: Firestore | null = null;
+  private analytics: Analytics | null = null;
+  private firestoreConfigUnsub: Unsubscribe | null = null;
+  private firestoreLeadsUnsub: Unsubscribe | null = null;
+  private firestoreStatsUnsub: Unsubscribe | null = null;
 
   private syncEventSource: EventSource | null = null;
 
@@ -329,7 +340,9 @@ class CMSService {
           hero: { ...DEFAULT_CMS_CONFIG.hero, ...(parsed.hero || {}) },
           leadership: { ...DEFAULT_CMS_CONFIG.leadership, ...(parsed.leadership || {}) },
           clientCategories: parsed.clientCategories || DEFAULT_CMS_CONFIG.clientCategories,
-          firebase: { ...DEFAULT_CMS_CONFIG.firebase, ...(parsed.firebase || {}) }
+          firebase: (parsed.firebase && parsed.firebase.apiKey && parsed.firebase.projectId)
+            ? { ...DEFAULT_CMS_CONFIG.firebase, ...parsed.firebase, enabled: true }
+            : DEFAULT_CMS_CONFIG.firebase
         };
         const cleaned = this.sanitizeProhibitedTerms(merged);
         if (stored.toLowerCase().includes("sovereign") || stored.toLowerCase().includes("professor")) {
@@ -567,10 +580,23 @@ class CMSService {
     };
 
     this.leads = [newLead, ...this.leads];
-    localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(this.leads));
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(this.leads));
+      } catch (e) {}
+    }
     this.notifyLeadsSubscribers();
 
-    // Broadcast to cloud pub-sub so all devices & PWA admin receive it immediately
+    // 1. Direct real-time write to Firestore (Document ID = newLead.id)
+    if (this.firestoreDb && this.config.firebase?.enabled) {
+      try {
+        await setDoc(doc(this.firestoreDb, "booking_leads", newLead.id), newLead);
+      } catch (err) {
+        console.warn("Could not sync lead to Firestore:", err);
+      }
+    }
+
+    // 2. Broadcast to cloud pub-sub as secondary redundancy
     try {
       fetch(`https://ntfy.sh/${this.SYNC_TOPIC}`, {
         method: "POST",
@@ -583,15 +609,6 @@ class CMSService {
         body: JSON.stringify(newLead)
       }).catch(err => console.warn("ntfy broadcast error:", err));
     } catch (e) {}
-
-    // Sync to Firestore if enabled
-    if (this.firestoreDb && this.config.firebase?.enabled) {
-      try {
-        await addDoc(collection(this.firestoreDb, "booking_leads"), newLead);
-      } catch (err) {
-        console.warn("Could not sync lead to Firestore:", err);
-      }
-    }
 
     return newLead;
   }
@@ -606,8 +623,25 @@ class CMSService {
       ...(notes !== undefined ? { notes } : {})
     };
 
-    localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(this.leads));
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(this.leads));
+      } catch (e) {}
+    }
     this.notifyLeadsSubscribers();
+
+    // Sync status update to Firestore
+    if (this.firestoreDb && this.config.firebase?.enabled) {
+      try {
+        await updateDoc(doc(this.firestoreDb, "booking_leads", id), {
+          status,
+          ...(notes !== undefined ? { notes } : {})
+        });
+      } catch (err) {
+        console.warn("Could not update lead status in Firestore:", err);
+      }
+    }
+
     return true;
   }
 
@@ -623,12 +657,23 @@ class CMSService {
       }
     }
     this.notifyLeadsSubscribers();
+
+    // Delete lead document directly from Firestore
+    if (this.firestoreDb && this.config.firebase?.enabled) {
+      try {
+        await deleteDoc(doc(this.firestoreDb, "booking_leads", id));
+      } catch (err) {
+        console.warn("Could not delete lead from Firestore:", err);
+      }
+    }
+
     return true;
   }
 
   public async clearAllLeads(): Promise<boolean> {
-    for (const lead of this.leads) {
-      this.deletedLeadIds.add(lead.id);
+    const toDelete = this.leads.map(l => l.id);
+    for (const id of toDelete) {
+      this.deletedLeadIds.add(id);
     }
     this.leads = [];
     if (typeof window !== "undefined") {
@@ -638,6 +683,16 @@ class CMSService {
       } catch (e) {}
     }
     this.notifyLeadsSubscribers();
+
+    // Delete from Firestore
+    if (this.firestoreDb && this.config.firebase?.enabled) {
+      for (const id of toDelete) {
+        try {
+          await deleteDoc(doc(this.firestoreDb, "booking_leads", id));
+        } catch (e) {}
+      }
+    }
+
     return true;
   }
 
@@ -775,14 +830,23 @@ class CMSService {
         recentLogs: [log, ...(this.visitorStats.recentLogs || []).slice(0, 49)]
       };
 
-      localStorage.setItem(VISITOR_STORAGE_KEY, JSON.stringify(this.visitorStats));
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(VISITOR_STORAGE_KEY, JSON.stringify(this.visitorStats));
+        } catch (e) {}
+      }
+
+      // Sync stats to Firestore
+      if (this.firestoreDb && this.config.firebase?.enabled) {
+        setDoc(doc(this.firestoreDb, "analytics", "visitor_stats"), this.visitorStats, { merge: true }).catch(() => {});
+      }
     } catch (e) {
       console.warn("Could not record visitor tracking", e);
     }
     return this.visitorStats;
   }
 
-  public trackClick(type: "call" | "whatsapp" | "booking" | "maps"): VisitorStats {
+  public trackClick(type: "call" | "whatsapp" | "booking" | "maps" | "email"): VisitorStats {
     try {
       const currentClicks = this.visitorStats.clicks || {
         callClicks: 142,
@@ -795,13 +859,23 @@ class CMSService {
       if (type === "whatsapp") currentClicks.whatsappClicks += 1;
       if (type === "booking") currentClicks.bookingClicks += 1;
       if (type === "maps") currentClicks.mapsClicks += 1;
+      if (type === "email") currentClicks.emailClicks = (currentClicks.emailClicks || 0) + 1;
 
       this.visitorStats = {
         ...this.visitorStats,
         clicks: currentClicks
       };
 
-      localStorage.setItem(VISITOR_STORAGE_KEY, JSON.stringify(this.visitorStats));
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(VISITOR_STORAGE_KEY, JSON.stringify(this.visitorStats));
+        } catch (e) {}
+      }
+
+      // Sync stats to Firestore
+      if (this.firestoreDb && this.config.firebase?.enabled) {
+        setDoc(doc(this.firestoreDb, "analytics", "visitor_stats"), this.visitorStats, { merge: true }).catch(() => {});
+      }
     } catch (e) {
       console.warn("Could not record click tracking", e);
     }
@@ -854,7 +928,7 @@ class CMSService {
     };
   }
 
-  // --- FIREBASE SYNC INTEGRATION ---
+  // --- FIREBASE REAL-TIME SYNC INTEGRATION ---
 
   public async initFirebaseIfEnabled(): Promise<{ success: boolean; message: string }> {
     const fb = this.config.firebase;
@@ -870,29 +944,34 @@ class CMSService {
         this.firebaseApp = initializeApp({
           apiKey: fb.apiKey,
           authDomain: fb.authDomain,
+          databaseURL: fb.databaseURL,
           projectId: fb.projectId,
           storageBucket: fb.storageBucket,
           messagingSenderId: fb.messagingSenderId,
-          appId: fb.appId
+          appId: fb.appId,
+          measurementId: fb.measurementId
         });
+      }
+
+      // Initialize Firebase Google Analytics if supported
+      if (typeof window !== "undefined" && fb.measurementId) {
+        isSupported().then(supported => {
+          if (supported && this.firebaseApp) {
+            this.analytics = getAnalytics(this.firebaseApp);
+          }
+        }).catch(() => {});
       }
 
       this.firestoreDb = getFirestore(this.firebaseApp);
 
-      // Attempt to load remote config from Firestore
-      const docRef = doc(this.firestoreDb, "site_settings", "cms_config");
-      const docSnap = await getDoc(docRef);
+      // 1. Real-time sync for Site Configuration (Index & Admin synced live)
+      this.setupFirestoreConfigSync();
 
-      if (docSnap.exists()) {
-        const remoteData = docSnap.data() as Partial<SiteCMSConfig>;
-        this.config = {
-          ...this.config,
-          ...remoteData,
-          firebase: { ...this.config.firebase, enabled: true }
-        };
-        localStorage.setItem(CMS_STORAGE_KEY, JSON.stringify(this.config));
-        this.notifyConfigSubscribers();
-      }
+      // 2. Real-time sync for Consultation Booking Leads
+      this.setupFirestoreLeadsSync();
+
+      // 3. Real-time sync for Visitor & Click Analytics
+      this.setupFirestoreStatsSync();
 
       return { success: true, message: `Connected to Firebase project: ${fb.projectId}` };
     } catch (err: any) {
@@ -901,10 +980,138 @@ class CMSService {
     }
   }
 
+  private setupFirestoreConfigSync() {
+    if (!this.firestoreDb) return;
+    if (this.firestoreConfigUnsub) {
+      this.firestoreConfigUnsub();
+      this.firestoreConfigUnsub = null;
+    }
+
+    const configDocRef = doc(this.firestoreDb, "site_settings", "cms_config");
+
+    this.firestoreConfigUnsub = onSnapshot(configDocRef, (snap) => {
+      if (snap.exists()) {
+        const remoteData = snap.data() as Partial<SiteCMSConfig>;
+        if (remoteData) {
+          const currentFirebase = this.config.firebase;
+          this.config = this.sanitizeProhibitedTerms({
+            ...this.config,
+            ...remoteData,
+            firebase: {
+              ...currentFirebase,
+              ...(remoteData.firebase || {}),
+              enabled: true
+            }
+          });
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem(CMS_STORAGE_KEY, JSON.stringify(this.config));
+            } catch (e) {}
+          }
+          this.applyTheme(this.config.theme);
+          this.applySEO(this.config.seo);
+          this.notifyConfigSubscribers();
+        }
+      } else {
+        // Seed remote doc with current active configuration
+        this.syncConfigToFirestore(this.config);
+      }
+    }, (err) => {
+      console.warn("Firestore config snapshot error:", err);
+    });
+  }
+
+  private setupFirestoreLeadsSync() {
+    if (!this.firestoreDb) return;
+    if (this.firestoreLeadsUnsub) {
+      this.firestoreLeadsUnsub();
+      this.firestoreLeadsUnsub = null;
+    }
+
+    const leadsCollection = collection(this.firestoreDb, "booking_leads");
+
+    this.firestoreLeadsUnsub = onSnapshot(leadsCollection, (snapshot) => {
+      const incomingLeads: LeadItem[] = [];
+      snapshot.forEach(docSnap => {
+        const item = docSnap.data() as LeadItem;
+        if (item && item.id && !this.deletedLeadIds.has(item.id)) {
+          incomingLeads.push(item);
+        }
+      });
+
+      // Sort by creation date descending
+      incomingLeads.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+
+      const isInitial = this.leads.length === 0;
+      const brandNew = incomingLeads.filter(nl => !this.leads.some(l => l.id === nl.id));
+
+      if (incomingLeads.length > 0 || this.leads.length > 0) {
+        this.leads = incomingLeads;
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(this.leads));
+          } catch (e) {}
+        }
+        this.notifyLeadsSubscribers();
+
+        // Trigger real-time sound chime and push notification for newly booked leads
+        if (!isInitial && brandNew.length > 0) {
+          this.playNotificationChime();
+          const first = brandNew[0];
+          this.sendBrowserNotification(
+            `⚖️ New Booking: ${first.name}`,
+            `${first.caseType} • ${first.phone}`
+          );
+        }
+      }
+    }, (err) => {
+      console.warn("Firestore leads snapshot error:", err);
+    });
+  }
+
+  private setupFirestoreStatsSync() {
+    if (!this.firestoreDb) return;
+    if (this.firestoreStatsUnsub) {
+      this.firestoreStatsUnsub();
+      this.firestoreStatsUnsub = null;
+    }
+
+    const statsDocRef = doc(this.firestoreDb, "analytics", "visitor_stats");
+
+    this.firestoreStatsUnsub = onSnapshot(statsDocRef, (snap) => {
+      if (snap.exists()) {
+        const remoteStats = snap.data() as Partial<VisitorStats>;
+        if (remoteStats) {
+          this.visitorStats = {
+            totalVisits: Math.max(this.visitorStats.totalVisits, remoteStats.totalVisits || 0),
+            uniqueVisitors: Math.max(this.visitorStats.uniqueVisitors, remoteStats.uniqueVisitors || 0),
+            lastVisit: remoteStats.lastVisit || this.visitorStats.lastVisit,
+            clicks: {
+              callClicks: Math.max(this.visitorStats.clicks?.callClicks || 0, remoteStats.clicks?.callClicks || 0),
+              whatsappClicks: Math.max(this.visitorStats.clicks?.whatsappClicks || 0, remoteStats.clicks?.whatsappClicks || 0),
+              emailClicks: Math.max(this.visitorStats.clicks?.emailClicks || 0, remoteStats.clicks?.emailClicks || 0),
+              bookingClicks: Math.max(this.visitorStats.clicks?.bookingClicks || 0, remoteStats.clicks?.bookingClicks || 0),
+              mapsClicks: Math.max(this.visitorStats.clicks?.mapsClicks || 0, remoteStats.clicks?.mapsClicks || 0)
+            },
+            recentLogs: remoteStats.recentLogs && remoteStats.recentLogs.length > 0 
+              ? remoteStats.recentLogs 
+              : this.visitorStats.recentLogs
+          };
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem(VISITOR_STORAGE_KEY, JSON.stringify(this.visitorStats));
+            } catch (e) {}
+          }
+        }
+      }
+    }, (err) => {
+      console.warn("Firestore stats snapshot error:", err);
+    });
+  }
+
   private async syncConfigToFirestore(config: SiteCMSConfig) {
     if (!this.firestoreDb) return;
     try {
-      // Don't store API secrets inside public config doc
       const cleanConfig = { ...config };
       await setDoc(doc(this.firestoreDb, "site_settings", "cms_config"), cleanConfig, { merge: true });
     } catch (err) {
