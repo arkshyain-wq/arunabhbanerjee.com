@@ -15,7 +15,6 @@ import {
   Menu, 
   X, 
   ExternalLink, 
-  Lock,
   Copy,
   Check,
   Send
@@ -661,31 +660,19 @@ export default function App() {
               </p>
             </div>
 
-            {/* Action buttons: Contact Developer & Chamber Portal */}
-            <div className="flex items-center gap-2.5 pt-1 sm:pt-0">
-              
+            {/* Action button: Contact Developer */}
+            <div className="pt-1 sm:pt-0">
               {/* Contact Developer Button (WhatsApp: 01609166109) */}
               <a
                 href="https://wa.me/8801609166109?text=Hello%20Developer%2C%20I%20am%20contacting%20you%20regarding%20the%20Advocate%20Arunabh%20Banerjee%20website."
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-[#0f121a] hover:bg-[#161a24] border border-gray-700/80 hover:border-emerald-500/60 text-gray-300 hover:text-emerald-400 text-[10px] font-mono rounded-xs transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0f121a] hover:bg-[#161a24] border border-gray-700/80 hover:border-emerald-500/60 text-gray-300 hover:text-emerald-400 text-[10px] font-mono rounded-xs transition-colors cursor-pointer"
                 title="Chat with Web Developer on WhatsApp (01609166109)"
               >
                 <MessageSquare className="w-3 h-3 text-emerald-400" />
                 <span>Contact Developer</span>
               </a>
-
-              {/* Chamber Portal /admin */}
-              <button
-                onClick={() => setShowAdminPanel(true)}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-[#0f121a] hover:bg-[#161a24] border border-gray-700/80 hover:border-[#d4af37]/60 text-gray-400 hover:text-[#d4af37] text-[10px] font-mono rounded-xs transition-colors focus:outline-none cursor-pointer"
-                title="Chamber Portal Login (Passcode: 2026)"
-              >
-                <Lock className="w-3 h-3 text-[#d4af37]" />
-                <span>Portal</span>
-              </button>
-
             </div>
 
           </div>
