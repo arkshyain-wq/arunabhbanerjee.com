@@ -690,8 +690,8 @@ export default function App() {
       {showAdminPanel && (
         <AdminPanel onClose={() => {
           setShowAdminPanel(false);
-          if (window.location.hash === "#admin") {
-            window.history.pushState(null, "", window.location.pathname);
+          if (window.location.hash === "#admin" || window.location.pathname.includes("/admin")) {
+            window.history.pushState(null, "", "/");
           }
         }} />
       )}
