@@ -852,7 +852,7 @@ export default function App() {
                   type="button"
                   onClick={() => setShowAdminPanel(true)}
                   className="text-gray-500 hover:text-[#d4af37] transition-colors cursor-pointer underline underline-offset-2"
-                  title="Chamber Admin Portal (Passcode: 2026)"
+                  title="Chamber Admin Portal"
                 >
                   Chamber Portal
                 </button>

@@ -36,6 +36,8 @@ import {
   Bell,
   BellRing,
   Smartphone,
+  Edit3,
+  Scale,
   X
 } from "lucide-react";
 import { SiteCMSConfig, LeadItem, VisitorStats } from "../types/cms";
@@ -56,7 +58,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
   const [hasNotificationPerm, setHasNotificationPerm] = useState<boolean>(cmsService.hasNotificationPermission());
 
   const [activeTab, setActiveTab] = useState<
-    "dashboard" | "leads" | "texts" | "practice" | "contacts" | "buttons" | "pictures" | "theme" | "seo" | "firebase"
+    "dashboard" | "leads" | "texts" | "practice" | "contacts" | "buttons" | "pictures" | "clientCategories" | "theme" | "seo" | "firebase"
   >("dashboard");
 
   const [config, setConfig] = useState<SiteCMSConfig>(cmsService.getConfig());
@@ -123,7 +125,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
       sessionStorage.setItem("arunabh_admin_auth", "2026");
       setAuthError("");
     } else {
-      setAuthError("Incorrect password. Please enter authorized passcode (2026).");
+      setAuthError("Incorrect passcode. Access denied.");
     }
   };
 
@@ -264,8 +266,13 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
       <div className="fixed inset-0 z-50 bg-[#07080d]/95 backdrop-blur-xl flex items-center justify-center p-4">
         <div className="w-full max-w-md bg-[#12141c] border-2 border-[#dbb657]/50 rounded-sm p-8 shadow-[0_15px_60px_rgba(219,182,87,0.15)] relative">
           <div className="flex flex-col items-center text-center space-y-4">
-            <div className="p-4 rounded-full bg-[#1c202d] border border-[#dbb657]/40 shadow-inner">
-              <Shield className="w-10 h-10 text-[#dbb657]" />
+            {/* App Icon */}
+            <div className="relative">
+              <img 
+                src="/app-icon.png" 
+                alt="Chamber Portal App Icon" 
+                className="w-20 h-20 rounded-2xl shadow-[0_0_30px_rgba(219,182,87,0.35)] border-2 border-[#dbb657]/70 object-cover"
+              />
             </div>
             
             <div className="space-y-1">
@@ -273,19 +280,19 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                 CHAMBER CONTROL SYSTEM
               </span>
               <h2 className="font-serif text-2xl font-bold text-white tracking-wide uppercase">
-                Advocate Portal Admin
+                Chamber Admin Portal
               </h2>
               <p className="text-xs text-gray-400">
-                Enter your authorized chamber passcode to manage texts, bookings, contacts, and SEO.
+                Enter your authorized chamber passcode to access controls.
               </p>
             </div>
 
-            <form onSubmit={handleLogin} className="w-full space-y-4 pt-4">
+            <form onSubmit={handleLogin} className="w-full space-y-4 pt-2">
               <div>
                 <div className="relative">
                   <input
                     type="password"
-                    placeholder="Enter Passcode (2026)"
+                    placeholder="Enter Chamber Passcode"
                     value={passwordInput}
                     onChange={(e) => setPasswordInput(e.target.value)}
                     className="w-full px-4 py-3 bg-[#0a0b10] border border-gray-700 focus:border-[#dbb657] text-white text-center font-mono tracking-widest text-lg rounded-xs outline-none transition-all placeholder:text-gray-600"
@@ -308,7 +315,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                     onChange={(e) => setRememberPasscode(e.target.checked)}
                     className="w-4 h-4 rounded-xs accent-[#dbb657] cursor-pointer"
                   />
-                  <span>Remember Passcode on this device</span>
+                  <span>Remember on this device</span>
                 </label>
               </div>
 
@@ -355,84 +362,75 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     <div className="fixed inset-0 z-50 bg-[#0a0b10] text-gray-200 flex flex-col overflow-hidden font-sans">
       
       {/* TOP BAR */}
-      <header className="border-b border-[#dbb657]/30 bg-[#10121a] px-3 sm:px-6 py-2.5 min-h-16 flex items-center justify-between flex-wrap sm:flex-nowrap gap-3 flex-shrink-0 z-20">
-        <div className="flex items-center gap-2.5">
-          <div className="p-1.5 sm:p-2 bg-[#171b26] border border-[#dbb657]/50 rounded-xs">
-            <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-[#dbb657]" />
-          </div>
+      <header className="border-b border-[#dbb657]/30 bg-[#10121a] px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2 flex-shrink-0 z-20">
+        <div className="flex items-center gap-2">
+          <img 
+            src="/app-icon.png" 
+            alt="Chamber Portal" 
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border border-[#dbb657]/60 object-cover shadow-sm"
+          />
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-serif text-xs sm:text-base font-bold text-white tracking-wide uppercase">
-                Chamber Admin CMS
-              </h1>
-              <span className="hidden sm:inline-block px-2 py-0.5 bg-[#dbb657]/15 text-[#dbb657] text-[10px] font-mono border border-[#dbb657]/40 rounded-xs">
-                Passcode: 2026
-              </span>
-            </div>
-            <p className="text-[10px] sm:text-[11px] text-gray-400">
-              Domain: <span className="text-amber-300 font-mono">arunabhbanerjee.com</span>
+            <h1 className="font-serif text-xs sm:text-sm font-bold text-white tracking-wide uppercase">
+              Chamber Admin
+            </h1>
+            <p className="text-[10px] text-gray-400 font-mono hidden sm:block">
+              arunabhbanerjee.com
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap justify-end">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {saveStatus && (
-            <span className="text-[11px] px-2.5 py-1 bg-emerald-950/80 border border-emerald-500/60 text-emerald-300 rounded-xs flex items-center gap-1 animate-pulse">
+            <span className="text-[10px] sm:text-xs px-2 py-1 bg-emerald-950/90 border border-emerald-500/60 text-emerald-300 rounded-xs flex items-center gap-1 animate-pulse">
               <Check className="w-3 h-3" />
-              <span>{saveStatus}</span>
+              <span className="hidden sm:inline">{saveStatus}</span>
             </span>
           )}
 
-          {/* PWA Download / Install App Button */}
-          <button
-            onClick={handleInstallApp}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#171b26] hover:bg-[#202534] border border-[#dbb657]/40 text-[#dbb657] text-xs font-semibold rounded-xs transition-colors cursor-pointer"
-            title="Download & Install Chamber App on Phone or PC"
-          >
-            <Smartphone className="w-3.5 h-3.5 text-[#dbb657]" />
-            <span className="hidden xs:inline">{isAppInstalled ? "App Installed" : "Download App"}</span>
-          </button>
-
-          {/* Push Notification Toggle Button */}
+          {/* Quick Push Notification Alert Toggle */}
           <button
             onClick={handleToggleNotifications}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 border text-xs font-semibold rounded-xs transition-colors cursor-pointer ${
+            className={`p-1.5 sm:px-2.5 sm:py-1.5 border rounded-xs text-xs font-mono flex items-center gap-1 cursor-pointer transition-colors ${
               hasNotificationPerm 
                 ? "bg-emerald-950/60 border-emerald-500/50 text-emerald-300"
                 : "bg-gray-800/80 border-gray-700 text-gray-300 hover:text-white"
             }`}
-            title="Toggle Real-Time Booking Sound & Desktop/Phone Alerts"
+            title="Notification Alerts"
           >
             {hasNotificationPerm ? <BellRing className="w-3.5 h-3.5 text-emerald-400" /> : <Bell className="w-3.5 h-3.5 text-gray-400" />}
-            <span className="hidden sm:inline">{hasNotificationPerm ? "Alerts Active" : "Enable Alerts"}</span>
+            <span className="hidden md:inline">{hasNotificationPerm ? "Alerts On" : "Enable Alerts"}</span>
+          </button>
+
+          {/* Install App Button */}
+          <button
+            onClick={handleInstallApp}
+            className="flex items-center gap-1 p-1.5 sm:px-2.5 sm:py-1.5 bg-[#171b26] hover:bg-[#202534] border border-[#dbb657]/40 text-[#dbb657] text-xs font-semibold rounded-xs transition-colors cursor-pointer"
+            title="Download & Install App"
+          >
+            <Smartphone className="w-3.5 h-3.5 text-[#dbb657]" />
+            <span className="hidden md:inline">{isAppInstalled ? "App Installed" : "Install App"}</span>
           </button>
 
           {/* Save All Button */}
           <button
             onClick={handleSaveAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-[#dbb657] to-[#b28d2f] hover:from-[#f3e7c4] hover:to-[#dbb657] text-[#0f1115] text-xs font-bold uppercase tracking-wider rounded-xs shadow-md transition-all active:scale-95 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-[#dbb657] to-[#b28d2f] hover:brightness-110 text-black text-xs font-bold uppercase tracking-wider rounded-xs shadow-md active:scale-95 cursor-pointer"
           >
             <Save className="w-3.5 h-3.5" />
             <span>Save</span>
           </button>
 
-          <button
-            onClick={handleResetDefaults}
-            title="Reset to default settings"
-            className="p-1.5 border border-gray-700 hover:border-amber-500/60 text-gray-400 hover:text-amber-300 rounded-xs transition-colors cursor-pointer"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-
+          {/* View Website Button */}
           <button
             onClick={onClose}
-            className="flex items-center gap-1 px-2.5 py-1.5 border border-gray-700 hover:border-[#dbb657] text-gray-300 hover:text-white text-xs font-medium rounded-xs transition-colors cursor-pointer"
-            title="View website"
+            className="flex items-center gap-1 p-1.5 sm:px-2.5 sm:py-1.5 border border-gray-700 hover:border-[#dbb657] text-gray-300 hover:text-white text-xs rounded-xs transition-colors cursor-pointer"
+            title="View Website"
           >
             <Eye className="w-3.5 h-3.5 text-[#dbb657]" />
             <span className="hidden sm:inline">Website</span>
           </button>
 
+          {/* Logout Button */}
           <button
             onClick={handleLogout}
             className="p-1.5 border border-red-900/60 hover:bg-red-950/50 text-red-400 rounded-xs transition-colors cursor-pointer"
@@ -443,65 +441,145 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
         </div>
       </header>
 
-      {/* MOBILE HORIZONTAL TABS BAR (Phone Screens) */}
-      <div className="md:hidden flex overflow-x-auto no-scrollbar gap-1 px-3 py-2 bg-[#0c0e15] border-b border-gray-800 shrink-0">
-        {[
-          { id: "dashboard", label: "Dashboard", icon: Users, badge: `${visitorStats.totalVisits}` },
-          { id: "leads", label: "Booking Leads", icon: Briefcase, badge: `${leads.length}` },
-          { id: "texts", label: "Site Texts", icon: FileText },
-          { id: "pictures", label: "Portraits", icon: ImageIcon },
-          { id: "contacts", label: "Helpline", icon: Phone },
-          { id: "buttons", label: "Buttons", icon: Sparkles },
-          { id: "theme", label: "Colors", icon: Palette },
-          { id: "seo", label: "SEO", icon: Globe },
-          { id: "firebase", label: "Database", icon: Database },
-        ].map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id as any)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xs text-[11px] font-mono whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
-                isActive
-                  ? "bg-[#dbb657] text-black font-bold shadow-sm"
-                  : "bg-gray-900/90 text-gray-300 border border-gray-800 hover:bg-gray-800"
-              }`}
-            >
-              <Icon className="w-3 h-3" />
-              <span>{item.label}</span>
-              {item.badge && (
-                <span className={`text-[9px] px-1 py-0.2 rounded-xs font-mono ${
-                  isActive ? "bg-black/30 text-black font-bold" : "bg-gray-800 text-gray-400"
-                }`}>
-                  {item.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
+      {/* MOBILE 3-SEGMENT NAVIGATION (Dashboard / Leads / Edit Website) */}
+      <div className="md:hidden bg-[#0c0e15] border-b border-gray-800 shrink-0">
+        <div className="grid grid-cols-3 p-1.5 gap-1.5">
+          <button
+            onClick={() => setActiveTab("dashboard")}
+            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xs text-xs font-semibold transition-all cursor-pointer ${
+              activeTab === "dashboard"
+                ? "bg-gradient-to-r from-[#dbb657] to-[#b28d2f] text-black shadow-md font-bold"
+                : "bg-[#141722] text-gray-300 hover:bg-[#1a1f2e] border border-gray-800"
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>Dashboard</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("leads")}
+            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xs text-xs font-semibold transition-all cursor-pointer relative ${
+              activeTab === "leads"
+                ? "bg-gradient-to-r from-[#dbb657] to-[#b28d2f] text-black shadow-md font-bold"
+                : "bg-[#141722] text-gray-300 hover:bg-[#1a1f2e] border border-gray-800"
+            }`}
+          >
+            <Briefcase className="w-3.5 h-3.5" />
+            <span>Leads</span>
+            {leads.length > 0 && (
+              <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                activeTab === "leads" ? "bg-black text-amber-300" : "bg-amber-400 text-black"
+              }`}>
+                {leads.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => {
+              if (activeTab === "dashboard" || activeTab === "leads") {
+                setActiveTab("texts");
+              }
+            }}
+            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xs text-xs font-semibold transition-all cursor-pointer ${
+              activeTab !== "dashboard" && activeTab !== "leads"
+                ? "bg-gradient-to-r from-[#dbb657] to-[#b28d2f] text-black shadow-md font-bold"
+                : "bg-[#141722] text-gray-300 hover:bg-[#1a1f2e] border border-gray-800"
+            }`}
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span>Edit Site</span>
+          </button>
+        </div>
+
+        {/* SUB-TABS WHEN IN EDIT SITE MODE */}
+        {activeTab !== "dashboard" && activeTab !== "leads" && (
+          <div className="flex overflow-x-auto no-scrollbar gap-1.5 px-2 pb-2 pt-0.5">
+            {[
+              { id: "texts", label: "Bio & Texts", icon: FileText },
+              { id: "contacts", label: "Helpline & Email", icon: Phone },
+              { id: "pictures", label: "Portrait Photo", icon: ImageIcon },
+              { id: "clientCategories", label: "Categories", icon: Users },
+              { id: "practice", label: "Practice Areas", icon: Scale },
+              { id: "theme", label: "Colors & SEO", icon: Palette },
+            ].map((sub) => {
+              const SubIcon = sub.icon;
+              const isSubActive = activeTab === sub.id;
+              return (
+                <button
+                  key={sub.id}
+                  onClick={() => setActiveTab(sub.id as any)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-xs text-[11px] font-mono whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
+                    isSubActive
+                      ? "bg-[#dbb657]/20 border border-[#dbb657] text-[#dbb657] font-bold"
+                      : "bg-[#12141c] text-gray-400 border border-gray-800 hover:text-white"
+                  }`}
+                >
+                  <SubIcon className="w-3 h-3" />
+                  <span>{sub.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* MAIN CONTAINER: SIDEBAR (Desktop) + CONTENT */}
       <div className="flex flex-1 overflow-hidden">
         
         {/* DESKTOP SIDEBAR NAVIGATION */}
-        <aside className="hidden md:flex w-60 border-r border-gray-800 bg-[#0e1017] flex-col flex-shrink-0 overflow-y-auto">
+        <aside className="hidden md:flex w-64 border-r border-gray-800 bg-[#0e1017] flex-col flex-shrink-0 overflow-y-auto">
           <div className="p-3 text-[10px] font-mono uppercase tracking-widest text-gray-500 px-4 pt-4">
-            Navigation Menu
+            Main Overview
           </div>
 
-          <nav className="space-y-1 p-2">
+          <nav className="space-y-1 px-2">
             {[
-              { id: "dashboard", label: "Dashboard & Visitors", icon: Users, badge: `${visitorStats.totalVisits} visits` },
+              { id: "dashboard", label: "Dashboard & Traffic", icon: Users, badge: `${visitorStats.totalVisits}` },
               { id: "leads", label: "Booking Leads", icon: Briefcase, badge: `${leads.length}` },
-              { id: "texts", label: "Site Texts & Bio", icon: FileText },
-              { id: "pictures", label: "Pictures & Media", icon: ImageIcon },
-              { id: "contacts", label: "Phone, WhatsApp & Address", icon: Phone },
-              { id: "buttons", label: "Buttons & Action Links", icon: Sparkles },
+            ].map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id as any)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xs text-xs font-medium transition-all cursor-pointer ${
+                    isActive
+                      ? "bg-[#dbb657]/15 text-[#dbb657] border-l-2 border-[#dbb657] font-semibold"
+                      : "text-gray-400 hover:text-gray-200 hover:bg-[#141824]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Icon className={`w-4 h-4 ${isActive ? "text-[#dbb657]" : "text-gray-500"}`} />
+                    <span>{item.label}</span>
+                  </div>
+                  {item.badge && (
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded-xs font-mono font-bold ${
+                      isActive ? "bg-[#dbb657]/30 text-white" : "bg-gray-800 text-gray-400"
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="p-3 text-[10px] font-mono uppercase tracking-widest text-gray-500 px-4 pt-4">
+            Website Content & CMS
+          </div>
+
+          <nav className="space-y-1 px-2">
+            {[
+              { id: "texts", label: "Advocate Bio & Titles", icon: FileText },
+              { id: "contacts", label: "Helpline, Email & Maps", icon: Phone },
+              { id: "pictures", label: "Official Portrait Photo", icon: ImageIcon },
+              { id: "clientCategories", label: "Client Categories", icon: Users },
+              { id: "practice", label: "Practice Areas & Matters", icon: Scale },
               { id: "theme", label: "Colors & Theme", icon: Palette },
-              { id: "seo", label: "SEO (arunabhbanerjee.com)", icon: Globe },
-              { id: "firebase", label: "Firebase Database", icon: Database, badge: config.firebase?.enabled ? "Active" : "Ready" },
+              { id: "seo", label: "SEO & Google Identity", icon: Globe },
+              { id: "firebase", label: "Firebase Cloud Sync", icon: Database, badge: config.firebase?.enabled ? "Active" : "Ready" },
             ].map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -541,7 +619,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
         </aside>
 
         {/* CONTENT AREA */}
-        <main className="flex-1 overflow-y-auto p-8 bg-[#0c0d12]">
+        <main className="flex-1 overflow-y-auto p-3.5 sm:p-6 md:p-8 bg-[#0c0d12]">
           
           {/* TAB 1: DASHBOARD & VISITORS */}
           {activeTab === "dashboard" && (
@@ -556,37 +634,89 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
               </div>
 
               {/* STAT CARDS */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-1">
-                  <span className="text-[10px] uppercase font-mono text-gray-500 tracking-wider">Total Page Views</span>
-                  <p className="text-3xl font-bold font-serif text-[#dbb657]">{visitorStats.totalVisits}</p>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+                <div className="p-3.5 sm:p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-1">
+                  <span className="text-[10px] uppercase font-mono text-gray-500 tracking-wider">Total Views</span>
+                  <p className="text-2xl sm:text-3xl font-bold font-serif text-[#dbb657]">{visitorStats.totalVisits}</p>
                   <span className="text-[10px] text-emerald-400 flex items-center gap-1">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Live Visitor Counter
+                    Live Counter
                   </span>
                 </div>
 
-                <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-1">
+                <div className="p-3.5 sm:p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-1">
                   <span className="text-[10px] uppercase font-mono text-gray-500 tracking-wider">Unique Visitors</span>
-                  <p className="text-3xl font-bold font-serif text-white">{visitorStats.uniqueVisitors}</p>
-                  <span className="text-[10px] text-gray-400">Direct & Referral Sessions</span>
+                  <p className="text-2xl sm:text-3xl font-bold font-serif text-white">{visitorStats.uniqueVisitors}</p>
+                  <span className="text-[10px] text-gray-400">Unique Devices</span>
                 </div>
 
-                <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-1">
-                  <span className="text-[10px] uppercase font-mono text-gray-500 tracking-wider">Consultation Leads</span>
-                  <p className="text-3xl font-bold font-serif text-amber-300">{leads.length}</p>
+                <div className="p-3.5 sm:p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-1">
+                  <span className="text-[10px] uppercase font-mono text-gray-500 tracking-wider">Bookings</span>
+                  <p className="text-2xl sm:text-3xl font-bold font-serif text-amber-300">{leads.length}</p>
                   <span className="text-[10px] text-amber-400">{leads.filter(l => l.status === 'new').length} New Pending</span>
                 </div>
 
-                <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-1">
-                  <span className="text-[10px] uppercase font-mono text-gray-500 tracking-wider">Official Domain</span>
-                  <p className="text-base font-bold font-mono text-emerald-400 truncate">arunabhbanerjee.com</p>
-                  <span className="text-[10px] text-gray-400">Canonical SEO Target</span>
+                <div className="p-3.5 sm:p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-1">
+                  <span className="text-[10px] uppercase font-mono text-gray-500 tracking-wider">Domain</span>
+                  <p className="text-xs sm:text-base font-bold font-mono text-emerald-400 truncate">arunabhbanerjee.com</p>
+                  <span className="text-[10px] text-gray-400">Live SSL Protected</span>
                 </div>
               </div>
 
+              {/* QUICK RECENT BOOKINGS (Instant Contact on Phone) */}
+              <div className="p-4 sm:p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-white uppercase font-serif tracking-wider flex items-center gap-2">
+                    <Briefcase className="w-4 h-4 text-[#dbb657]" />
+                    <span>Recent Consultation Bookings</span>
+                  </h3>
+                  <button 
+                    onClick={() => setActiveTab("leads")}
+                    className="text-xs text-[#dbb657] hover:underline font-semibold cursor-pointer"
+                  >
+                    View All ({leads.length}) →
+                  </button>
+                </div>
+
+                {leads.length > 0 ? (
+                  <div className="space-y-2 pt-1">
+                    {leads.slice(0, 3).map((lead) => (
+                      <div key={lead.id} className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-white">{lead.name}</span>
+                            <span className="text-[9px] px-1.5 py-0.5 bg-[#dbb657]/15 text-[#dbb657] border border-[#dbb657]/30 rounded-xs font-mono font-bold">
+                              {lead.clientCategory || "Individuals"}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-400 mt-0.5">{lead.caseType} • <span className="font-mono text-gray-500">{lead.date}</span></p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={`tel:${lead.phone.replace(/\s+/g, '')}`}
+                            className="flex-1 sm:flex-initial px-3 py-1.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 text-xs font-semibold rounded-xs flex items-center justify-center gap-1.5"
+                          >
+                            <Phone className="w-3.5 h-3.5" /> Call
+                          </a>
+                          <a
+                            href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(lead.name)}%2C%20Advocate%20Arunabh%20Banerjee's%20chamber%20is%20reviewing%20your%20consultation%20request.`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex-1 sm:flex-initial px-3 py-1.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 text-xs font-semibold rounded-xs flex items-center justify-center gap-1.5"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" /> WhatsApp
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500 py-2">No bookings received yet.</p>
+                )}
+              </div>
+
               {/* USER INTERACTION & CLICK ANALYTICS */}
-              <div className="p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-3">
+              <div className="p-4 sm:p-5 bg-[#12141c] border border-gray-800 rounded-xs space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-sm font-bold text-white uppercase font-serif tracking-wider">
@@ -601,29 +731,29 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 pt-2">
                   <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs">
                     <span className="text-[10px] uppercase font-mono text-gray-500 block">📞 Call Clicks</span>
-                    <p className="text-2xl font-bold font-mono text-white mt-1">{visitorStats.clicks?.callClicks || 0}</p>
-                    <span className="text-[9px] text-gray-400 font-mono">tel:+919810703335</span>
+                    <p className="text-xl sm:text-2xl font-bold font-mono text-white mt-1">{visitorStats.clicks?.callClicks || 0}</p>
+                    <span className="text-[9px] text-gray-400 font-mono truncate block">tel:+919810703335</span>
                   </div>
 
                   <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs">
                     <span className="text-[10px] uppercase font-mono text-gray-500 block">💬 WhatsApp Clicks</span>
-                    <p className="text-2xl font-bold font-mono text-emerald-400 mt-1">{visitorStats.clicks?.whatsappClicks || 0}</p>
-                    <span className="text-[9px] text-gray-400 font-mono">Direct chat opened</span>
+                    <p className="text-xl sm:text-2xl font-bold font-mono text-emerald-400 mt-1">{visitorStats.clicks?.whatsappClicks || 0}</p>
+                    <span className="text-[9px] text-gray-400 font-mono truncate block">Direct chat opened</span>
                   </div>
 
                   <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs">
                     <span className="text-[10px] uppercase font-mono text-gray-500 block">📅 Bookings Saved</span>
-                    <p className="text-2xl font-bold font-mono text-[#dbb657] mt-1">{leads.length}</p>
-                    <span className="text-[9px] text-gray-400 font-mono">Consultation leads</span>
+                    <p className="text-xl sm:text-2xl font-bold font-mono text-[#dbb657] mt-1">{leads.length}</p>
+                    <span className="text-[9px] text-gray-400 font-mono truncate block">Consultation leads</span>
                   </div>
 
                   <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs">
                     <span className="text-[10px] uppercase font-mono text-gray-500 block">🗺️ Maps Directions</span>
-                    <p className="text-2xl font-bold font-mono text-blue-400 mt-1">{visitorStats.clicks?.mapsClicks || 0}</p>
-                    <span className="text-[9px] text-gray-400 font-mono">Supreme Court & Saket</span>
+                    <p className="text-xl sm:text-2xl font-bold font-mono text-blue-400 mt-1">{visitorStats.clicks?.mapsClicks || 0}</p>
+                    <span className="text-[9px] text-gray-400 font-mono truncate block">Supreme Court & Saket</span>
                   </div>
                 </div>
               </div>
@@ -1257,6 +1387,64 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                         placeholder="Judicial Relief / Outcome"
                         className="w-full px-2.5 py-1.5 bg-[#08090d] border border-gray-700 text-gray-300 text-xs rounded-xs outline-none focus:border-[#dbb657]"
                       />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: CLIENT CATEGORIES (Individuals, Corporate, NGOs, Trusts, NRIs) */}
+          {activeTab === "clientCategories" && (
+            <div className="space-y-6 max-w-4xl">
+              <div>
+                <h2 className="text-xl font-bold font-serif text-white uppercase tracking-wide">
+                  Client Categories Management
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Edit the 5 client classification categories shown on homepage cards and booking form.
+                </p>
+              </div>
+
+              <div className="p-4 sm:p-6 bg-[#12141c] border border-gray-800 rounded-xs space-y-4">
+                <div className="space-y-3">
+                  {(config.clientCategories || []).map((cat, idx) => (
+                    <div key={cat.id} className="p-3.5 bg-[#0a0b10] border border-gray-800 rounded-xs space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white font-mono flex items-center gap-2">
+                          <span className="text-[#dbb657]">#{idx + 1}</span>
+                          {cat.name}
+                        </span>
+                        <span className="text-[10px] text-gray-500 font-mono">ID: {cat.id}</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Category Title</label>
+                          <input
+                            type="text"
+                            value={cat.name}
+                            onChange={(e) => {
+                              const updated = [...(config.clientCategories || [])];
+                              updated[idx] = { ...updated[idx], name: e.target.value };
+                              setConfig({ ...config, clientCategories: updated });
+                            }}
+                            className="w-full px-3 py-2 bg-[#12141c] border border-gray-700 text-white text-xs rounded-xs font-bold focus:border-[#dbb657]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Subtitle</label>
+                          <input
+                            type="text"
+                            value={cat.subtitle}
+                            onChange={(e) => {
+                              const updated = [...(config.clientCategories || [])];
+                              updated[idx] = { ...updated[idx], subtitle: e.target.value };
+                              setConfig({ ...config, clientCategories: updated });
+                            }}
+                            className="w-full px-3 py-2 bg-[#12141c] border border-gray-700 text-[#dbb657] text-xs rounded-xs font-mono focus:border-[#dbb657]"
+                          />
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1991,9 +2179,11 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-[#1c202d] border border-[#dbb657]/40 rounded-full">
-                <Smartphone className="w-6 h-6 text-[#dbb657]" />
-              </div>
+              <img 
+                src="/app-icon.png" 
+                alt="Chamber App Icon" 
+                className="w-12 h-12 rounded-xl border border-[#dbb657]/70 shadow-md object-cover"
+              />
               <div>
                 <h3 className="font-serif text-lg font-bold text-white tracking-wide">
                   Install Chamber App
