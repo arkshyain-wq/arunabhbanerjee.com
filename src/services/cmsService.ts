@@ -20,6 +20,7 @@ import {
 
 const CMS_STORAGE_KEY = "arunabh_cms_config_v1";
 const LEADS_STORAGE_KEY = "arunabh_leads_v1";
+const DELETED_LEADS_KEY = "arunabh_deleted_leads_v1";
 const VISITOR_STORAGE_KEY = "arunabh_visitor_stats_v1";
 const VISITOR_SESSION_KEY = "arunabh_visited_session";
 
@@ -221,6 +222,7 @@ type LeadsSubscriber = (leads: LeadItem[]) => void;
 class CMSService {
   private config: SiteCMSConfig;
   private leads: LeadItem[] = [];
+  private deletedLeadIds: Set<string> = new Set();
   private visitorStats: VisitorStats;
   private configSubscribers: ConfigSubscriber[] = [];
   private leadsSubscribers: LeadsSubscriber[] = [];
@@ -230,6 +232,7 @@ class CMSService {
   private syncEventSource: EventSource | null = null;
 
   constructor() {
+    this.deletedLeadIds = this.loadDeletedLeadIds();
     this.config = this.loadConfig();
     this.leads = this.loadLeads();
     this.visitorStats = this.loadVisitorStats();
@@ -457,7 +460,7 @@ class CMSService {
             const parsed = JSON.parse(line);
             if (parsed.event === "message" && parsed.message) {
               const leadObj = JSON.parse(parsed.message);
-              if (leadObj && leadObj.id && !this.leads.some(l => l.id === leadObj.id)) {
+              if (leadObj && leadObj.id && !this.deletedLeadIds.has(leadObj.id) && !this.leads.some(l => l.id === leadObj.id)) {
                 this.leads.unshift(leadObj);
                 updated = true;
               }
@@ -486,7 +489,7 @@ class CMSService {
             const data = JSON.parse(event.data);
             if (data && data.event === "message" && data.message) {
               const incomingLead = JSON.parse(data.message);
-              if (incomingLead && incomingLead.id && !this.leads.some(l => l.id === incomingLead.id)) {
+              if (incomingLead && incomingLead.id && !this.deletedLeadIds.has(incomingLead.id) && !this.leads.some(l => l.id === incomingLead.id)) {
                 this.leads.unshift(incomingLead);
                 localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(this.leads));
                 this.notifyLeadsSubscribers();
@@ -610,9 +613,48 @@ class CMSService {
 
   public async deleteLead(id: string): Promise<boolean> {
     this.leads = this.leads.filter(l => l.id !== id);
-    localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(this.leads));
+    this.deletedLeadIds.add(id);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(this.leads));
+        localStorage.setItem(DELETED_LEADS_KEY, JSON.stringify(Array.from(this.deletedLeadIds)));
+      } catch (e) {
+        console.warn("Could not save deleted leads to localStorage", e);
+      }
+    }
     this.notifyLeadsSubscribers();
     return true;
+  }
+
+  public async clearAllLeads(): Promise<boolean> {
+    for (const lead of this.leads) {
+      this.deletedLeadIds.add(lead.id);
+    }
+    this.leads = [];
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify([]));
+        localStorage.setItem(DELETED_LEADS_KEY, JSON.stringify(Array.from(this.deletedLeadIds)));
+      } catch (e) {}
+    }
+    this.notifyLeadsSubscribers();
+    return true;
+  }
+
+  private loadDeletedLeadIds(): Set<string> {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const stored = localStorage.getItem(DELETED_LEADS_KEY);
+      if (stored) {
+        const arr = JSON.parse(stored);
+        if (Array.isArray(arr)) {
+          return new Set(arr);
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load deleted lead IDs", e);
+    }
+    return new Set();
   }
 
   public getBookedSlots(date: string): string[] {
@@ -650,10 +692,14 @@ class CMSService {
   }
 
   private loadLeads(): LeadItem[] {
+    this.deletedLeadIds = this.loadDeletedLeadIds();
     try {
       const stored = localStorage.getItem(LEADS_STORAGE_KEY);
       if (stored) {
-        return JSON.parse(stored);
+        const parsed: LeadItem[] = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(l => !this.deletedLeadIds.has(l.id));
+        }
       }
     } catch (e) {
       console.warn("Failed to load leads from localStorage", e);
@@ -686,8 +732,13 @@ class CMSService {
         createdAt: new Date(Date.now() - 3600000 * 24).toISOString()
       }
     ];
-    localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(demoLeads));
-    return demoLeads;
+    const filteredDemo = demoLeads.filter(l => !this.deletedLeadIds.has(l.id));
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(filteredDemo));
+      } catch (e) {}
+    }
+    return filteredDemo;
   }
 
   private notifyLeadsSubscribers() {
