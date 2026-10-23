@@ -24,7 +24,10 @@ import {
   Award,
   Globe,
   ArrowRight,
-  Users
+  Users,
+  Download,
+  Smartphone,
+  Laptop
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 // @ts-ignore
@@ -37,6 +40,9 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [config, setConfig] = useState<SiteCMSConfig>(cmsService.getConfig());
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
+  const [isAppInstalled, setIsAppInstalled] = useState<boolean>(false);
+  const [showInstallModal, setShowInstallModal] = useState<boolean>(false);
 
   // Form State: Manual case subject entry, client category selection, no time slots
   const [formData, setFormData] = useState({
@@ -97,11 +103,16 @@ export default function App() {
       date: prev.date || tomorrowStr
     }));
 
-    return () => {
-      window.removeEventListener("hashchange", checkAdminRoute);
-      window.removeEventListener("popstate", checkAdminRoute);
-      unsubConfig();
+    // PWA beforeinstallprompt handler
+    const installHandler = (e: any) => {
+      e.preventDefault();
+      setDeferredInstallPrompt(e);
     };
+    window.addEventListener("beforeinstallprompt", installHandler);
+
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      setIsAppInstalled(true);
+    }
 
     // Keyboard shortcut for chamber portal: Ctrl + Shift + A
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -115,7 +126,9 @@ export default function App() {
     return () => {
       window.removeEventListener("hashchange", checkAdminRoute);
       window.removeEventListener("popstate", checkAdminRoute);
+      window.removeEventListener("beforeinstallprompt", installHandler);
       window.removeEventListener("keydown", handleKeyDown);
+      unsubConfig();
     };
   }, []);
 
@@ -206,6 +219,48 @@ export default function App() {
     }
   };
 
+  const handleInstallApp = async () => {
+    if (deferredInstallPrompt) {
+      try {
+        await deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        if (choice?.outcome === "accepted") {
+          setIsAppInstalled(true);
+        }
+        setDeferredInstallPrompt(null);
+      } catch (err) {
+        console.error("Install prompt error:", err);
+      }
+    }
+    setShowInstallModal(true);
+  };
+
+  const handleDirectEmailClick = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    cmsService.trackClick("email");
+    const email = config.contacts?.directEmail || "prof.abanerjee@gmail.com";
+    const subject = encodeURIComponent("Legal Consultation Inquiry — Advocate Arunabh Banerjee");
+    const body = encodeURIComponent(
+      "Hello Advocate Arunabh Banerjee,\n\nI am contacting you regarding a legal consultation and counsel representation.\n\nClient Name: \nPhone Number: \nCity / Jurisdiction: \nCase Category / Subject: \nBrief Summary of Legal Matter: \n"
+    );
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    } else {
+      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  const handleDirectNumberClick = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    cmsService.trackClick("whatsapp");
+    const text = encodeURIComponent(
+      "Hello Advocate Arunabh Banerjee, I am contacting you for legal consultation and representation."
+    );
+    const url = `https://wa.me/919810703335?text=${text}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <div className="min-h-screen bg-[#07080c] text-gray-200 font-sans selection:bg-[#d4af37] selection:text-black antialiased relative">
       
@@ -247,6 +302,17 @@ export default function App() {
               Client Categories
             </button>
 
+            {/* Install App Button (PC & Mobile) */}
+            <button
+              id="install-app-btn"
+              onClick={handleInstallApp}
+              className="px-3 py-2 border border-[#d4af37]/45 hover:border-[#d4af37] bg-[#141724]/90 hover:bg-[#1a1f30] text-[#d4af37] hover:text-white text-xs font-mono rounded-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Install Official App on PC or Mobile"
+            >
+              <Download className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span>{isAppInstalled ? "App Installed" : "Install App"}</span>
+            </button>
+
             {/* Prominent CTA */}
             <button
               onClick={() => scrollToSection("booking")}
@@ -258,10 +324,18 @@ export default function App() {
           </nav>
 
           {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center gap-3">
+          <div className="flex md:hidden items-center gap-2 sm:gap-3">
+            <button
+              onClick={handleInstallApp}
+              className="p-1.5 text-[#d4af37] border border-[#d4af37]/40 rounded-xs text-[10px] font-mono flex items-center gap-1"
+              title="Install App"
+            >
+              <Download className="w-3 h-3 text-[#d4af37]" />
+              <span className="hidden xs:inline">App</span>
+            </button>
             <button
               onClick={() => scrollToSection("booking")}
-              className="bg-gradient-to-r from-[#b28d2f] via-[#d4af37] to-[#b28d2f] text-black font-semibold text-[11px] tracking-wider uppercase px-3.5 py-2 rounded-xs"
+              className="bg-gradient-to-r from-[#b28d2f] via-[#d4af37] to-[#b28d2f] text-black font-semibold text-[11px] tracking-wider uppercase px-3 py-1.5 rounded-xs"
             >
               Book
             </button>
@@ -298,6 +372,43 @@ export default function App() {
               >
                 Client Categories
               </button>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleInstallApp();
+                }}
+                className="flex items-center gap-2 w-full text-left text-sm uppercase tracking-wider text-[#d4af37] py-2.5 border-b border-gray-800"
+              >
+                <Download className="w-4 h-4 text-[#d4af37]" />
+                <span>{isAppInstalled ? "App Installed" : "Install App (PC & Mobile)"}</span>
+              </button>
+              
+              {/* Direct Messaging Quick Links in Mobile Menu */}
+              <div className="pt-2 border-b border-gray-800 pb-3 space-y-2">
+                <a
+                  href={`https://wa.me/919810703335?text=${encodeURIComponent("Hello Advocate Arunabh Banerjee, I am contacting you for legal consultation and representation.")}`}
+                  onClick={(e) => {
+                    setMobileMenuOpen(false);
+                    handleDirectNumberClick(e);
+                  }}
+                  className="flex items-center gap-2 text-xs font-mono text-emerald-400 hover:text-emerald-300 py-1"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>WhatsApp SMS: {config.contacts?.displayMobile || "+91 98107 03335"}</span>
+                </a>
+                <a
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${config.contacts?.directEmail || "prof.abanerjee@gmail.com"}&su=${encodeURIComponent("Legal Consultation Inquiry — Advocate Arunabh Banerjee")}`}
+                  onClick={(e) => {
+                    setMobileMenuOpen(false);
+                    handleDirectEmailClick(e);
+                  }}
+                  className="flex items-center gap-2 text-xs font-mono text-red-400 hover:text-red-300 py-1"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>Gmail Compose: {config.contacts?.directEmail || "prof.abanerjee@gmail.com"}</span>
+                </a>
+              </div>
+
               <button
                 onClick={() => scrollToSection("booking")}
                 className="w-full bg-gradient-to-r from-[#b28d2f] via-[#d4af37] to-[#b28d2f] text-black font-bold text-xs tracking-wider uppercase py-3 rounded-xs flex items-center justify-center gap-2 mt-2"
@@ -350,38 +461,94 @@ export default function App() {
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-1">
                 {/* Direct Chamber Helpline */}
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-[#141724] border border-[#d4af37]/45 flex items-center justify-center text-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.2)] shrink-0">
-                    <Phone className="w-4 h-4" />
+                  <div 
+                    onClick={handleDirectNumberClick}
+                    className="w-9 h-9 rounded-full bg-[#141724] border border-[#d4af37]/45 flex items-center justify-center text-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.2)] shrink-0 cursor-pointer hover:border-emerald-500 hover:text-emerald-400 transition-colors"
+                    title="Click to Message on WhatsApp / SMS"
+                  >
+                    <MessageSquare className="w-4 h-4 text-emerald-400" />
                   </div>
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-gray-400 block font-mono">
-                      Direct Chamber Helpline
+                      Direct Chamber Helpline & SMS
                     </span>
                     <a 
-                      href={`tel:${config.contacts?.primaryMobile || "+919810703335"}`} 
-                      onClick={() => cmsService.trackClick("call")}
-                      className="text-base sm:text-lg font-mono font-bold text-white hover:text-[#d4af37] transition-colors"
+                      href={`https://wa.me/919810703335?text=${encodeURIComponent("Hello Advocate Arunabh Banerjee, I am contacting you for legal consultation and representation.")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={handleDirectNumberClick}
+                      className="text-base sm:text-lg font-mono font-bold text-white hover:text-emerald-400 transition-colors cursor-pointer"
+                      title="Click to Message directly on WhatsApp / SMS"
                     >
                       {config.contacts?.displayMobile || "+91 98107 03335"}
                     </a>
+                    {/* Instant 1-tap SMS & Call Actions */}
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <a
+                        href={`https://wa.me/919810703335?text=${encodeURIComponent("Hello Advocate Arunabh Banerjee, I am contacting you for legal consultation and representation.")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={handleDirectNumberClick}
+                        className="text-[10px] font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1 bg-emerald-950/50 border border-emerald-500/50 px-2 py-0.5 rounded-xs cursor-pointer shadow-xs"
+                        title="Chat & SMS on WhatsApp"
+                      >
+                        <MessageSquare className="w-2.5 h-2.5" /> WhatsApp SMS
+                      </a>
+                      <a
+                        href={`tel:${config.contacts?.primaryMobile || "+919810703335"}`}
+                        onClick={() => cmsService.trackClick("call")}
+                        className="text-[10px] font-mono text-gray-300 hover:text-[#d4af37] flex items-center gap-1 bg-gray-900/80 border border-gray-700 px-2 py-0.5 rounded-xs"
+                        title="Direct Phone Call"
+                      >
+                        <Phone className="w-2.5 h-2.5 text-[#d4af37]" /> Call
+                      </a>
+                      <a
+                        href={`sms:+919810703335?body=${encodeURIComponent("Hello Advocate Arunabh Banerjee, I need urgent legal assistance.")}`}
+                        className="sm:hidden text-[10px] font-mono text-blue-300 hover:text-white flex items-center gap-1 bg-blue-950/40 border border-blue-500/40 px-2 py-0.5 rounded-xs"
+                        title="Direct Mobile SMS"
+                      >
+                        SMS
+                      </a>
+                    </div>
                   </div>
                 </div>
 
                 {/* Direct Advocate Email */}
                 <div className="flex items-center gap-3 sm:border-l sm:border-gray-800/80 sm:pl-4">
-                  <div className="w-9 h-9 rounded-full bg-[#141724] border border-[#d4af37]/45 flex items-center justify-center text-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.2)] shrink-0">
-                    <Mail className="w-4 h-4" />
+                  <div 
+                    onClick={handleDirectEmailClick}
+                    className="w-9 h-9 rounded-full bg-[#141724] border border-[#d4af37]/45 flex items-center justify-center text-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.2)] shrink-0 cursor-pointer hover:border-red-400 hover:text-red-400 transition-colors"
+                    title="Click to Open Direct Gmail Compose"
+                  >
+                    <Mail className="w-4 h-4 text-red-400" />
                   </div>
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-gray-400 block font-mono">
-                      Direct Email
+                      Direct Gmail / Email
                     </span>
                     <a 
-                      href={`mailto:${config.contacts?.directEmail || "prof.abanerjee@gmail.com"}`} 
-                      className="text-sm sm:text-base font-mono font-bold text-white hover:text-[#d4af37] transition-colors"
+                      href={`https://mail.google.com/mail/?view=cm&fs=1&to=${config.contacts?.directEmail || "prof.abanerjee@gmail.com"}&su=${encodeURIComponent("Legal Consultation Inquiry — Advocate Arunabh Banerjee")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={handleDirectEmailClick}
+                      className="text-sm sm:text-base font-mono font-bold text-white hover:text-red-400 transition-colors cursor-pointer"
+                      title="Click to Open Direct Gmail Compose Window"
                     >
                       {config.contacts?.directEmail || "prof.abanerjee@gmail.com"}
                     </a>
+                    {/* Instant Direct Gmail Compose Badge */}
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <a
+                        href={`https://mail.google.com/mail/?view=cm&fs=1&to=${config.contacts?.directEmail || "prof.abanerjee@gmail.com"}&su=${encodeURIComponent("Legal Consultation Inquiry — Advocate Arunabh Banerjee")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={handleDirectEmailClick}
+                        className="text-[10px] font-mono text-red-400 hover:text-red-300 flex items-center gap-1 bg-red-950/40 border border-red-500/40 px-2 py-0.5 rounded-xs cursor-pointer shadow-xs"
+                        title="Direct Gmail Compose Window"
+                      >
+                        <Mail className="w-2.5 h-2.5 text-red-400" /> Direct Gmail Compose
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -420,7 +587,7 @@ export default function App() {
                 <div className="mt-3.5 flex flex-col sm:flex-row gap-2.5 w-full relative z-20">
                   {/* WhatsApp */}
                   <a
-                    href={`https://wa.me/${(config.contacts?.whatsappNumber || "919810703335").replace(/[^0-9]/g, "")}`}
+                    href={`https://wa.me/${(config.contacts?.whatsappNumber || "919810703335").replace(/[^0-9]/g, "")}?text=${encodeURIComponent("Hello Advocate Arunabh Banerjee, I am contacting you for legal consultation and representation.")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => cmsService.trackClick("whatsapp")}
@@ -841,11 +1008,38 @@ export default function App() {
                 <span>© 2026 All Rights Reserved</span>
                 <span>•</span>
                 <a 
-                  href={`mailto:${config.contacts?.directEmail || "prof.abanerjee@gmail.com"}`}
-                  className="text-gray-400 hover:text-[#d4af37] transition-colors"
+                  href={`https://wa.me/919810703335?text=${encodeURIComponent("Hello Advocate Arunabh Banerjee, I am contacting you for legal consultation and representation.")}`}
+                  onClick={handleDirectNumberClick}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-emerald-400 transition-colors cursor-pointer flex items-center gap-1"
+                  title="WhatsApp Direct SMS & Helpline"
                 >
-                  {config.contacts?.directEmail || "prof.abanerjee@gmail.com"}
+                  <MessageSquare className="w-2.5 h-2.5 text-emerald-400" />
+                  <span>{config.contacts?.displayMobile || "+91 98107 03335"}</span>
                 </a>
+                <span>•</span>
+                <a 
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${config.contacts?.directEmail || "prof.abanerjee@gmail.com"}&su=${encodeURIComponent("Legal Consultation Inquiry — Advocate Arunabh Banerjee")}`}
+                  onClick={handleDirectEmailClick}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-red-400 transition-colors cursor-pointer flex items-center gap-1"
+                  title="Direct Gmail Compose Window"
+                >
+                  <Mail className="w-2.5 h-2.5 text-red-400" />
+                  <span>{config.contacts?.directEmail || "prof.abanerjee@gmail.com"}</span>
+                </a>
+                <span>•</span>
+                <button
+                  type="button"
+                  onClick={handleInstallApp}
+                  className="text-[#d4af37]/80 hover:text-[#d4af37] transition-colors cursor-pointer inline-flex items-center gap-1"
+                  title="Install Chamber App on PC or Mobile"
+                >
+                  <Download className="w-2.5 h-2.5" />
+                  <span>Install App</span>
+                </button>
                 <span>•</span>
                 <button
                   type="button"
@@ -884,6 +1078,88 @@ export default function App() {
             window.history.pushState(null, "", "/");
           }
         }} />
+      )}
+
+      {/* PWA INSTALLATION MODAL FOR PC AND MOBILE */}
+      {showInstallModal && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+          <div className="w-full max-w-md bg-[#12141c] border-2 border-[#d4af37] rounded-xs p-6 shadow-2xl relative space-y-4">
+            <button
+              onClick={() => setShowInstallModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-xs cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <img 
+                src="/app-icon.png" 
+                alt="Chamber App Icon" 
+                className="w-12 h-12 rounded-xl border border-[#d4af37]/70 shadow-md object-cover"
+              />
+              <div>
+                <h3 className="font-serif text-lg font-bold text-white tracking-wide">
+                  Install Chamber App
+                </h3>
+                <p className="text-xs text-gray-400">Install on Windows PC, Mac, Android & iPhone</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 text-xs text-gray-300 max-h-[60vh] overflow-y-auto pr-1">
+              <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs space-y-1">
+                <span className="font-bold text-[#d4af37] block flex items-center gap-1.5">
+                  <Laptop className="w-3.5 h-3.5" /> 💻 Windows PC, Mac & Chromebook:
+                </span>
+                <p>1. Look at your browser address bar (top right) and click the <strong className="text-white">Install icon</strong> (computer screen with down arrow) or click browser menu (⋮) → <strong className="text-white">"Install Advocate Arunabh Banerjee"</strong>.</p>
+                <p>2. Click <strong className="text-white">"Install"</strong>.</p>
+                <p>3. Opens in a high-speed desktop window with taskbar pinning and instant consultation access.</p>
+              </div>
+
+              <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs space-y-1">
+                <span className="font-bold text-[#d4af37] block flex items-center gap-1.5">
+                  <Smartphone className="w-3.5 h-3.5" /> 📱 Android & Google Chrome:
+                </span>
+                <p>1. Tap the three dots menu (⋮) in your browser top right corner.</p>
+                <p>2. Select <strong className="text-white">"Install app"</strong> or <strong className="text-white">"Add to Home screen"</strong>.</p>
+                <p>3. The official Chamber App icon will appear on your phone home screen.</p>
+              </div>
+
+              <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs space-y-1">
+                <span className="font-bold text-[#d4af37] block">🍏 Apple iPhone & iPad (Safari):</span>
+                <p>1. Tap the <strong className="text-white">Share button</strong> (square with arrow pointing up) at the bottom.</p>
+                <p>2. Scroll down and tap <strong className="text-white">"Add to Home Screen"</strong>.</p>
+                <p>3. Tap <strong className="text-white">Add</strong> in top right. You're done!</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 pt-2">
+              {deferredInstallPrompt && (
+                <button
+                  onClick={() => {
+                    deferredInstallPrompt.prompt();
+                    deferredInstallPrompt.userChoice.then((choiceResult: any) => {
+                      if (choiceResult.outcome === "accepted") {
+                        setIsAppInstalled(true);
+                        setShowInstallModal(false);
+                      }
+                      setDeferredInstallPrompt(null);
+                    });
+                  }}
+                  className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-black font-bold uppercase tracking-wider text-xs rounded-xs hover:brightness-110 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg"
+                >
+                  <Download className="w-4 h-4 text-black" />
+                  Install App Now (1-Click)
+                </button>
+              )}
+              <button
+                onClick={() => setShowInstallModal(false)}
+                className="w-full py-2.5 bg-gradient-to-r from-[#dbb657] to-[#b28d2f] text-black font-bold uppercase tracking-wider text-xs rounded-xs hover:opacity-90 transition-opacity cursor-pointer"
+              >
+                Got It
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>

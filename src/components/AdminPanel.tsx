@@ -141,15 +141,18 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
 
   const handleInstallApp = async () => {
     if (deferredInstallPrompt) {
-      deferredInstallPrompt.prompt();
-      const choice = await deferredInstallPrompt.userChoice;
-      if (choice.outcome === "accepted") {
-        setIsAppInstalled(true);
+      try {
+        await deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        if (choice?.outcome === "accepted") {
+          setIsAppInstalled(true);
+        }
+        setDeferredInstallPrompt(null);
+      } catch (err) {
+        console.error("Install prompt error:", err);
       }
-      setDeferredInstallPrompt(null);
-    } else {
-      setShowInstallModal(true);
     }
+    setShowInstallModal(true);
   };
 
   const handleToggleNotifications = async () => {
@@ -425,14 +428,14 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
             <span className="hidden md:inline">{hasNotificationPerm ? "Alerts On" : "Enable Alerts"}</span>
           </button>
 
-          {/* Install App Button */}
+          {/* Install App Button (PC & Mobile) */}
           <button
             onClick={handleInstallApp}
-            className="flex items-center gap-1 p-1.5 sm:px-2.5 sm:py-1.5 bg-[#171b26] hover:bg-[#202534] border border-[#dbb657]/40 text-[#dbb657] text-xs font-semibold rounded-xs transition-colors cursor-pointer"
-            title="Download & Install App"
+            className="flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 bg-[#171b26] hover:bg-[#202534] border border-[#dbb657]/50 text-[#dbb657] text-xs font-semibold rounded-xs transition-colors cursor-pointer"
+            title="Download & Install Chamber App on PC or Mobile"
           >
-            <Smartphone className="w-3.5 h-3.5 text-[#dbb657]" />
-            <span className="hidden md:inline">{isAppInstalled ? "App Installed" : "Install App"}</span>
+            <Download className="w-3.5 h-3.5 text-[#dbb657]" />
+            <span className="hidden md:inline">{isAppInstalled ? "App Installed" : "Install App (PC & Mobile)"}</span>
           </button>
 
           {/* Save All Button */}
@@ -2226,7 +2229,14 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
               </div>
             </div>
 
-            <div className="space-y-3 text-xs text-gray-300">
+            <div className="space-y-3 text-xs text-gray-300 max-h-[60vh] overflow-y-auto pr-1">
+              <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs space-y-1">
+                <span className="font-bold text-[#dbb657] block">💻 Windows PC, Mac & Chromebook:</span>
+                <p>1. Look at your browser address bar (top right) and click the <strong className="text-white">Install icon</strong> (computer screen with down arrow) or click browser menu (⋮) → <strong className="text-white">"Install app"</strong>.</p>
+                <p>2. Click <strong className="text-white">"Install"</strong>.</p>
+                <p>3. The app will launch in its own standalone desktop window with taskbar pinning and instant desktop notifications!</p>
+              </div>
+
               <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs space-y-1">
                 <span className="font-bold text-[#dbb657] block">📱 Android & Google Chrome:</span>
                 <p>1. Tap the three dots menu (⋮) in your browser top right corner.</p>
@@ -2242,16 +2252,36 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
               </div>
 
               <div className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xs text-emerald-300">
-                ✨ <strong>Instant Alerts:</strong> Once installed, you will receive sound alerts and push notifications directly on your phone whenever a client books a consultation.
+                ✨ <strong>Instant Alerts:</strong> Once installed, you will receive sound alerts and push notifications directly on your PC and Phone whenever a client books a consultation.
               </div>
             </div>
 
-            <button
-              onClick={() => setShowInstallModal(false)}
-              className="w-full py-2.5 bg-gradient-to-r from-[#dbb657] to-[#b28d2f] text-black font-bold uppercase tracking-wider text-xs rounded-xs hover:opacity-90 transition-opacity"
-            >
-              Got It
-            </button>
+            <div className="flex flex-col gap-2 pt-2">
+              {deferredInstallPrompt && (
+                <button
+                  onClick={() => {
+                    deferredInstallPrompt.prompt();
+                    deferredInstallPrompt.userChoice.then((choiceResult: any) => {
+                      if (choiceResult.outcome === "accepted") {
+                        setIsAppInstalled(true);
+                        setShowInstallModal(false);
+                      }
+                      setDeferredInstallPrompt(null);
+                    });
+                  }}
+                  className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-black font-bold uppercase tracking-wider text-xs rounded-xs hover:brightness-110 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg"
+                >
+                  <Download className="w-4 h-4 text-black" />
+                  Install App Now (1-Click)
+                </button>
+              )}
+              <button
+                onClick={() => setShowInstallModal(false)}
+                className="w-full py-2.5 bg-gradient-to-r from-[#dbb657] to-[#b28d2f] text-black font-bold uppercase tracking-wider text-xs rounded-xs hover:opacity-90 transition-opacity cursor-pointer"
+              >
+                Got It
+              </button>
+            </div>
           </div>
         </div>
       )}

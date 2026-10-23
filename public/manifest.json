@@ -1,14 +1,17 @@
 {
   "name": "Advocate Arunabh Banerjee - Legal Chambers & Admin",
   "short_name": "Arunabh Law",
+  "id": "arunabh-banerjee-legal-chambers",
   "description": "Official Chamber Portal & Client Management System of Advocate Arunabh Banerjee, Supreme Court Advocate",
-  "start_url": "/admin",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
   "background_color": "#07080c",
   "theme_color": "#07080c",
-  "categories": ["business", "productivity"],
+  "categories": ["business", "productivity", "legal"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/pwa-192.png",
@@ -31,6 +34,22 @@
       "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Book Consultation",
+      "short_name": "Book Now",
+      "description": "Direct appointment with Advocate Arunabh Banerjee",
+      "url": "/#booking",
+      "icons": [{ "src": "/pwa-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Chamber Admin Portal",
+      "short_name": "Admin",
+      "description": "Access Chamber Booking Management & CMS",
+      "url": "/admin",
+      "icons": [{ "src": "/pwa-192.png", "sizes": "192x192" }]
     }
   ]
 }
