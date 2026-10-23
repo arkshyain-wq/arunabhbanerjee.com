@@ -105,6 +105,7 @@ export interface SiteCMSConfig {
     whatsappNumber: string;
     whatsappMessage: string;
     chamberEmail: string;
+    directEmail?: string;
     supremeCourtChamber: string;
     saketCourtsChamber: string;
     delhiHighCourtLiaison: string;

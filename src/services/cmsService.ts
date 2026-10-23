@@ -45,6 +45,7 @@ export const DEFAULT_CMS_CONFIG: SiteCMSConfig = {
     whatsappNumber: "919810703335",
     whatsappMessage: "Hello Advocate Arunabh Banerjee, I am reaching out through your official chamber portal (arunabhbanerjee.com) for legal counsel and representation.",
     chamberEmail: "chamber.arunabh.banerjee@gmail.com",
+    directEmail: "prof.abanerjee@gmail.com",
     supremeCourtChamber: "Chamber No. 25, Old Lawyers Block, Supreme Court of India, New Delhi – 110001",
     saketCourtsChamber: "Chamber 632, Lawyers Block, Saket Courts Complex, New Delhi – 110017",
     delhiHighCourtLiaison: "Delhi High Court Bar Association Chambers, Sher Shah Road, New Delhi – 110003",
@@ -254,6 +255,9 @@ class CMSService {
 
   private sanitizeProhibitedTerms<T>(obj: T): T {
     if (typeof obj === "string") {
+      if ((obj as string).includes("@")) {
+        return obj;
+      }
       let cleaned = (obj as string)
         .replace(/sovereign\s+justice/gi, "Constitutional Justice")
         .replace(/sovereign/gi, "Constitutional")
@@ -315,6 +319,7 @@ class CMSService {
           contacts: { 
             ...DEFAULT_CMS_CONFIG.contacts, 
             ...(parsed.contacts || {}),
+            directEmail: parsed.contacts?.directEmail || DEFAULT_CMS_CONFIG.contacts.directEmail,
             googleBusinessUrl: parsed.contacts?.googleBusinessUrl || DEFAULT_CMS_CONFIG.contacts.googleBusinessUrl
           },
           buttons: { ...DEFAULT_CMS_CONFIG.buttons, ...(parsed.buttons || {}) },

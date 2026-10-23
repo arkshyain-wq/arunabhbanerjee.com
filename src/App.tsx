@@ -7,6 +7,7 @@ import React, { useState, useEffect, useId } from "react";
 import { 
   Scale, 
   Phone, 
+  Mail,
   MessageSquare, 
   Calendar, 
   MapPin, 
@@ -346,22 +347,43 @@ export default function App() {
                 {config.hero?.bioText || "Legal consultation and representation across criminal, matrimonial, commercial, constitutional, and human rights matters."}
               </p>
 
-              {/* Prominent Direct Phone */}
-              <div className="flex items-center gap-3 pt-1">
-                <div className="w-9 h-9 rounded-full bg-[#141724] border border-[#d4af37]/45 flex items-center justify-center text-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.2)]">
-                  <Phone className="w-4 h-4" />
+              {/* Direct Contact Points: Helpline & Direct Email */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-1">
+                {/* Direct Chamber Helpline */}
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-[#141724] border border-[#d4af37]/45 flex items-center justify-center text-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.2)] shrink-0">
+                    <Phone className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-gray-400 block font-mono">
+                      Direct Chamber Helpline
+                    </span>
+                    <a 
+                      href={`tel:${config.contacts?.primaryMobile || "+919810703335"}`} 
+                      onClick={() => cmsService.trackClick("call")}
+                      className="text-base sm:text-lg font-mono font-bold text-white hover:text-[#d4af37] transition-colors"
+                    >
+                      {config.contacts?.displayMobile || "+91 98107 03335"}
+                    </a>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-[10px] uppercase tracking-wider text-gray-400 block font-mono">
-                    Direct Chamber Helpline
-                  </span>
-                  <a 
-                    href={`tel:${config.contacts?.primaryMobile || "+919810703335"}`} 
-                    onClick={() => cmsService.trackClick("call")}
-                    className="text-base sm:text-lg font-mono font-bold text-white hover:text-[#d4af37] transition-colors"
-                  >
-                    {config.contacts?.displayMobile || "+91 98107 03335"}
-                  </a>
+
+                {/* Direct Advocate Email */}
+                <div className="flex items-center gap-3 sm:border-l sm:border-gray-800/80 sm:pl-4">
+                  <div className="w-9 h-9 rounded-full bg-[#141724] border border-[#d4af37]/45 flex items-center justify-center text-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.2)] shrink-0">
+                    <Mail className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-gray-400 block font-mono">
+                      Direct Email
+                    </span>
+                    <a 
+                      href={`mailto:${config.contacts?.directEmail || "prof.abanerjee@gmail.com"}`} 
+                      className="text-sm sm:text-base font-mono font-bold text-white hover:text-[#d4af37] transition-colors"
+                    >
+                      {config.contacts?.directEmail || "prof.abanerjee@gmail.com"}
+                    </a>
+                  </div>
                 </div>
               </div>
 
@@ -816,8 +838,15 @@ export default function App() {
               <p className="font-serif text-xs font-semibold text-white tracking-wide">
                 Advocate Arunabh Banerjee • Supreme Court Advocate
               </p>
-              <div className="flex items-center gap-2 text-[10px] text-gray-400 font-mono">
+              <div className="flex items-center flex-wrap gap-2 text-[10px] text-gray-400 font-mono">
                 <span>© 2026 All Rights Reserved</span>
+                <span>•</span>
+                <a 
+                  href={`mailto:${config.contacts?.directEmail || "prof.abanerjee@gmail.com"}`}
+                  className="text-gray-400 hover:text-[#d4af37] transition-colors"
+                >
+                  {config.contacts?.directEmail || "prof.abanerjee@gmail.com"}
+                </a>
                 <span>•</span>
                 <button
                   type="button"

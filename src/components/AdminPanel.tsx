@@ -1321,6 +1321,16 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                       className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
                     />
                   </div>
+
+                  <div>
+                    <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Direct Advocate Email (Own)</label>
+                    <input
+                      type="email"
+                      value={config.contacts.directEmail || "prof.abanerjee@gmail.com"}
+                      onChange={(e) => setConfig({ ...config, contacts: { ...config.contacts, directEmail: e.target.value } })}
+                      className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                    />
+                  </div>
                 </div>
 
                 <div>
