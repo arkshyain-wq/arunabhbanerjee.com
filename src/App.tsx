@@ -211,19 +211,13 @@ export default function App() {
             </span>
           </a>
 
-          {/* Desktop Navigation (Home, Contact, Book Appointment) */}
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <button
               onClick={() => scrollToSection("home")}
               className="text-xs uppercase tracking-widest text-gray-300 hover:text-[#d4af37] transition-colors focus:outline-none font-medium"
             >
               Home
-            </button>
-            <button
-              onClick={() => scrollToSection("contact")}
-              className="text-xs uppercase tracking-widest text-gray-300 hover:text-[#d4af37] transition-colors focus:outline-none font-medium"
-            >
-              Contact
             </button>
 
             {/* Prominent CTA */}
@@ -270,12 +264,6 @@ export default function App() {
                 className="block w-full text-left text-sm uppercase tracking-wider text-gray-300 hover:text-[#d4af37] py-2.5 border-b border-gray-800"
               >
                 Home
-              </button>
-              <button
-                onClick={() => scrollToSection("contact")}
-                className="block w-full text-left text-sm uppercase tracking-wider text-gray-300 hover:text-[#d4af37] py-2.5 border-b border-gray-800"
-              >
-                Contact &amp; Chambers
               </button>
               <button
                 onClick={() => scrollToSection("booking")}
@@ -669,162 +657,7 @@ export default function App() {
       </section>
 
       {/* =========================================================================
-          4. CONTACT & CHAMBERS
-      ========================================================================= */}
-      <section id="contact" className="py-16 md:py-20 border-b border-[#d4af37]/15 bg-[#07080c]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
-            <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-[#d4af37] font-semibold">
-              Chamber Directory
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-medium text-white tracking-tight">
-              Contact &amp; Chambers
-            </h2>
-            <p className="text-xs sm:text-sm text-gray-400">
-              Offices situated within premier capital judicial complexes.
-            </p>
-          </div>
-
-          {/* 2 Compact Chamber Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            
-            {/* 1. Supreme Court Compound Office */}
-            <div className="bg-[#10131d] border border-[#d4af37]/30 hover:border-[#d4af37]/70 p-6 rounded-xs transition-all shadow-sm flex flex-col justify-between space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xs bg-[#171a26] border border-[#d4af37]/45 flex items-center justify-center text-[#d4af37]">
-                    <MapPin className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#d4af37]">
-                      Apex Court Office
-                    </span>
-                    <h3 className="font-serif text-base font-semibold text-white">
-                      Supreme Court Compound Office
-                    </h3>
-                  </div>
-                </div>
-
-                <p className="text-xs sm:text-sm text-gray-300 leading-relaxed pl-1">
-                  Chamber No. 25, Old Lawyers Block, Supreme Court of India, New Delhi – 110001.
-                </p>
-
-                <p className="text-[11px] font-mono text-gray-400 pl-1">
-                  10:00 AM – 05:00 PM (Court Working Days)
-                </p>
-              </div>
-
-              <div className="pt-4 border-t border-gray-800 flex items-center gap-3">
-                <a
-                  href="tel:+919810703335"
-                  onClick={() => cmsService.trackClick("call")}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 border border-[#d4af37]/45 text-[#f5d77f] hover:bg-[#d4af37]/10 text-xs font-semibold rounded-xs transition-colors cursor-pointer"
-                >
-                  <Phone className="w-3 h-3 text-[#d4af37]" />
-                  Call Office
-                </a>
-                <a
-                  href="https://maps.google.com/?q=Supreme+Court+of+India+New+Delhi"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => cmsService.trackClick("maps")}
-                  className="inline-flex items-center justify-center gap-1.5 py-2 px-3 border border-gray-700 text-gray-300 hover:text-white hover:border-gray-500 text-xs rounded-xs transition-colors cursor-pointer"
-                >
-                  <ExternalLink className="w-3 h-3 text-[#d4af37]" />
-                  Maps
-                </a>
-              </div>
-            </div>
-
-            {/* 2. Saket District Courts Chamber */}
-            <div className="bg-[#10131d] border border-[#d4af37]/30 hover:border-[#d4af37]/70 p-6 rounded-xs transition-all shadow-sm flex flex-col justify-between space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xs bg-[#171a26] border border-[#d4af37]/45 flex items-center justify-center text-[#d4af37]">
-                    <MapPin className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#d4af37]">
-                      District Complex Chamber
-                    </span>
-                    <h3 className="font-serif text-base font-semibold text-white">
-                      Saket District Courts Chamber
-                    </h3>
-                  </div>
-                </div>
-
-                <p className="text-xs sm:text-sm text-gray-300 leading-relaxed pl-1">
-                  Chamber 632, Lawyers Block, Saket Courts Complex, New Delhi – 110017.
-                </p>
-
-                <p className="text-[11px] font-mono text-gray-400 pl-1">
-                  02:00 PM – 07:30 PM (Monday – Saturday)
-                </p>
-              </div>
-
-              <div className="pt-4 border-t border-gray-800 flex items-center gap-3">
-                <a
-                  href="tel:+919810703335"
-                  onClick={() => cmsService.trackClick("call")}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 border border-[#d4af37]/45 text-[#f5d77f] hover:bg-[#d4af37]/10 text-xs font-semibold rounded-xs transition-colors cursor-pointer"
-                >
-                  <Phone className="w-3 h-3 text-[#d4af37]" />
-                  Call Chamber
-                </a>
-                <a
-                  href="https://maps.google.com/?q=Saket+Courts+Complex+New+Delhi"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => cmsService.trackClick("maps")}
-                  className="inline-flex items-center justify-center gap-1.5 py-2 px-3 border border-gray-700 text-gray-300 hover:text-white hover:border-gray-500 text-xs rounded-xs transition-colors cursor-pointer"
-                >
-                  <ExternalLink className="w-3 h-3 text-[#d4af37]" />
-                  Maps
-                </a>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Quick Direct Communications Strip */}
-          <div className="mt-8 max-w-4xl mx-auto p-4 bg-[#10131d] border border-[#d4af37]/25 rounded-xs flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
-            <div className="flex items-center gap-2 text-gray-300">
-              <Phone className="w-4 h-4 text-[#d4af37]" />
-              <span>Direct Phone:</span>
-              <a 
-                href="tel:+919810703335" 
-                onClick={() => cmsService.trackClick("call")}
-                className="text-[#d4af37] font-bold hover:underline"
-              >
-                +91 98107 03335
-              </a>
-            </div>
-
-            <div className="flex items-center gap-2 text-gray-300">
-              <MessageSquare className="w-4 h-4 text-emerald-400" />
-              <span>WhatsApp:</span>
-              <a 
-                href="https://wa.me/919810703335" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                onClick={() => cmsService.trackClick("whatsapp")}
-                className="text-emerald-400 font-bold hover:underline"
-              >
-                +91 98107 03335
-              </a>
-            </div>
-
-            <div className="text-gray-400 text-[11px]">
-              chamber.arunabh.banerjee@gmail.com
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* =========================================================================
-          5. MINIMAL FOOTER
+          4. MINIMAL FOOTER
       ========================================================================= */}
       <footer className="py-10 bg-[#050609] text-gray-400 text-xs">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
