@@ -332,42 +332,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Three Main Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-3">
-                
-                {/* 1. Call Now */}
-                <a
-                  href="tel:+919810703335"
-                  onClick={() => cmsService.trackClick("call")}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xs border border-[#d4af37]/65 text-[#f5d77f] hover:bg-[#d4af37]/10 text-xs uppercase tracking-wider font-semibold active:scale-[0.98] transition-all cursor-pointer"
-                >
-                  <Phone className="w-3.5 h-3.5 text-[#d4af37]" />
-                  Call Now
-                </a>
-
-                {/* 2. WhatsApp */}
-                <a
-                  href="https://wa.me/919810703335"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => cmsService.trackClick("whatsapp")}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xs border border-emerald-500/50 bg-emerald-950/20 text-emerald-400 hover:bg-emerald-900/30 text-xs uppercase tracking-wider font-semibold active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(16,185,129,0.12)] cursor-pointer"
-                >
-                  <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
-                  WhatsApp
-                </a>
-
-                {/* 3. Book Appointment */}
-                <button
-                  onClick={() => scrollToSection("booking")}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xs bg-gradient-to-r from-[#b28d2f] via-[#d4af37] to-[#b28d2f] text-black font-bold text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
-                >
-                  <Calendar className="w-3.5 h-3.5" />
-                  Book Appointment
-                </button>
-
-              </div>
-
             </div>
 
             {/* Right Advocate Portrait (desktop) / Stacked (mobile) */}
@@ -403,6 +367,30 @@ export default function App() {
                     </p>
                   </div>
 
+                </div>
+
+                {/* Action Buttons Directly Under the Image */}
+                <div className="mt-3.5 flex flex-col sm:flex-row gap-2.5 w-full">
+                  {/* WhatsApp */}
+                  <a
+                    href="https://wa.me/919810703335"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => cmsService.trackClick("whatsapp")}
+                    className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xs border border-emerald-500/50 bg-emerald-950/25 text-emerald-400 hover:bg-emerald-900/40 text-xs uppercase tracking-wider font-semibold active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(16,185,129,0.12)] cursor-pointer"
+                  >
+                    <MessageSquare className="w-4 h-4 text-emerald-400" />
+                    WhatsApp
+                  </a>
+
+                  {/* Book Appointment */}
+                  <button
+                    onClick={() => scrollToSection("booking")}
+                    className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xs bg-gradient-to-r from-[#b28d2f] via-[#d4af37] to-[#b28d2f] text-black font-bold text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    <Calendar className="w-4 h-4 text-black" />
+                    Book Appointment
+                  </button>
                 </div>
 
               </div>
