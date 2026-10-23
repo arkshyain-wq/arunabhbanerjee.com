@@ -10,7 +10,6 @@ import {
   Mail,
   MessageSquare, 
   Calendar, 
-  MapPin, 
   CheckCircle2, 
   AlertCircle, 
   Menu, 
@@ -859,22 +858,8 @@ export default function App() {
               </div>
             </div>
 
-            {/* Action buttons: Google Business Profile & Contact Developer */}
+            {/* Contact Developer Button (WhatsApp: 01609166109) */}
             <div className="flex items-center flex-wrap gap-2 pt-1 sm:pt-0 justify-center sm:justify-end">
-              {/* Google Business Profile Link */}
-              <a
-                href={config.contacts?.googleBusinessUrl || "https://share.google/DWN0Xox7NNa1ziBn6"}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => cmsService.trackClick("maps")}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0f121a] hover:bg-[#161a24] border border-blue-500/40 hover:border-blue-400 text-gray-300 hover:text-blue-300 text-[10px] font-mono rounded-xs transition-colors cursor-pointer shadow-xs"
-                title="View Official Advocate Arunabh Banerjee Profile on Google Search & Maps"
-              >
-                <MapPin className="w-3 h-3 text-blue-400" />
-                <span>Google Business Profile</span>
-              </a>
-
-              {/* Contact Developer Button (WhatsApp: 01609166109) */}
               <a
                 href="https://wa.me/8801609166109?text=Hello%20Developer%2C%20I%20am%20contacting%20you%20regarding%20the%20Advocate%20Arunabh%20Banerjee%20website."
                 target="_blank"
