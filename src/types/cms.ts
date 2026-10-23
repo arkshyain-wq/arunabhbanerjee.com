@@ -29,11 +29,12 @@ export interface LeadItem {
   id: string;
   name: string;
   phone: string;
-  email: string;
+  email?: string;
   caseType: string;
   date: string;
-  message: string;
-  isUrgent: boolean;
+  timeSlot?: string;
+  message?: string;
+  isUrgent?: boolean;
   status: 'new' | 'contacted' | 'consultation_scheduled' | 'closed';
   createdAt: string;
   notes?: string;

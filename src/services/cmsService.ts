@@ -410,15 +410,30 @@ class CMSService {
     return true;
   }
 
+  public getBookedSlots(date: string): string[] {
+    if (!date) return [];
+    return this.leads
+      .filter(l => l.date === date && l.status !== "closed" && l.timeSlot)
+      .map(l => l.timeSlot as string);
+  }
+
+  public isSlotBooked(date: string, timeSlot: string): boolean {
+    if (!date || !timeSlot) return false;
+    return this.leads.some(
+      l => l.date === date && l.timeSlot === timeSlot && l.status !== "closed"
+    );
+  }
+
   public exportLeadsCSV(): string {
-    const headers = ["ID", "Name", "Phone", "Email", "Case Type", "Preferred Date", "Urgent", "Status", "Date Submitted", "Message", "Notes"];
+    const headers = ["ID", "Name", "Phone", "Email", "Case Type", "Preferred Date", "Time Slot", "Urgent", "Status", "Date Submitted", "Message", "Notes"];
     const rows = this.leads.map(lead => [
       `"${lead.id}"`,
       `"${lead.name.replace(/"/g, '""')}"`,
       `"${lead.phone}"`,
-      `"${lead.email}"`,
+      `"${lead.email || ""}"`,
       `"${lead.caseType}"`,
       `"${lead.date}"`,
+      `"${lead.timeSlot || ""}"`,
       lead.isUrgent ? "Yes" : "No",
       `"${lead.status}"`,
       `"${lead.createdAt}"`,
