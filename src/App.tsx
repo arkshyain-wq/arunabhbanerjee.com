@@ -647,70 +647,48 @@ export default function App() {
       {/* =========================================================================
           4. MINIMAL FOOTER
       ========================================================================= */}
-      <footer className="py-10 bg-[#050609] text-gray-400 text-xs">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 border-b border-gray-800">
-            <div>
-              <p className="font-serif text-sm font-semibold text-white tracking-wide">
-                Advocate Arunabh Banerjee
-              </p>
-              <p className="text-[11px] text-[#d4af37] font-mono tracking-wider uppercase">
-                Supreme Court Advocate
-              </p>
-            </div>
-
-            <div className="flex items-center gap-6 text-xs font-mono">
-              <a 
-                href="tel:+919810703335" 
-                onClick={() => cmsService.trackClick("call")}
-                className="hover:text-[#d4af37] transition-colors flex items-center gap-1.5"
-              >
-                <Phone className="w-3.5 h-3.5 text-[#d4af37]" />
-                +91 98107 03335
-              </a>
-              <a 
-                href="https://wa.me/919810703335" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                onClick={() => cmsService.trackClick("whatsapp")}
-                className="hover:text-emerald-400 transition-colors flex items-center gap-1.5"
-              >
-                <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
-                WhatsApp
-              </a>
-            </div>
-          </div>
-
-          {/* Professional Legal Disclaimer */}
-          <p className="text-[11px] text-gray-400 leading-relaxed text-center sm:text-left">
-            In accordance with the rules of the Bar Council of India, this website is intended solely for informational purposes and to facilitate client communication, and does not constitute advertisement, solicitation, or legal advice. Seeking legal consultation through this portal creates an advocate-client advisory request.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 text-[10px] text-gray-400 border-t border-gray-800/60 font-mono">
-            <p>© 2026 Chambers of Advocate Arunabh Banerjee. All Rights Reserved.</p>
+      <footer className="py-6 bg-[#040508] border-t border-gray-800/80 text-gray-400 text-xs">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
             
-            {/* Discreet Chamber Admin Access */}
-            <div className="flex items-center gap-3">
+            {/* Branding & Short Copyright */}
+            <div className="space-y-0.5">
+              <p className="font-serif text-xs font-semibold text-white tracking-wide">
+                Advocate Arunabh Banerjee • Supreme Court Advocate
+              </p>
+              <p className="text-[10px] text-gray-400 font-mono">
+                © 2026 All Rights Reserved • Informational &amp; Consultation Portal
+              </p>
+            </div>
+
+            {/* Action buttons: Contact Developer & Chamber Portal */}
+            <div className="flex items-center gap-2.5 pt-1 sm:pt-0">
+              
+              {/* Contact Developer Button (WhatsApp: 01609166109) */}
+              <a
+                href="https://wa.me/8801609166109?text=Hello%20Developer%2C%20I%20am%20contacting%20you%20regarding%20the%20Advocate%20Arunabh%20Banerjee%20website."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-[#0f121a] hover:bg-[#161a24] border border-gray-700/80 hover:border-emerald-500/60 text-gray-300 hover:text-emerald-400 text-[10px] font-mono rounded-xs transition-colors cursor-pointer"
+                title="Chat with Web Developer on WhatsApp (01609166109)"
+              >
+                <MessageSquare className="w-3 h-3 text-emerald-400" />
+                <span>Contact Developer</span>
+              </a>
+
+              {/* Chamber Portal /admin */}
               <button
                 onClick={() => setShowAdminPanel(true)}
-                className="inline-flex items-center gap-1 text-gray-400 hover:text-[#d4af37] transition-colors focus:outline-none cursor-pointer"
-                title="Chamber Portal Clerk Login (Passcode: 2026)"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-[#0f121a] hover:bg-[#161a24] border border-gray-700/80 hover:border-[#d4af37]/60 text-gray-400 hover:text-[#d4af37] text-[10px] font-mono rounded-xs transition-colors focus:outline-none cursor-pointer"
+                title="Chamber Portal Login (Passcode: 2026)"
               >
                 <Lock className="w-3 h-3 text-[#d4af37]" />
-                Chamber Admin Portal
+                <span>Portal</span>
               </button>
-              <span className="text-gray-700">|</span>
-              <a
-                href="#admin"
-                onClick={(e) => { e.preventDefault(); setShowAdminPanel(true); }}
-                className="text-gray-500 hover:text-gray-300"
-              >
-                /admin
-              </a>
-            </div>
-          </div>
 
+            </div>
+
+          </div>
         </div>
       </footer>
 
