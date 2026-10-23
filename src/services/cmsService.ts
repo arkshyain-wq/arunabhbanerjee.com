@@ -49,7 +49,8 @@ export const DEFAULT_CMS_CONFIG: SiteCMSConfig = {
     saketCourtsChamber: "Chamber 632, Lawyers Block, Saket Courts Complex, New Delhi – 110017",
     delhiHighCourtLiaison: "Delhi High Court Bar Association Chambers, Sher Shah Road, New Delhi – 110003",
     officeHours: "10:00 AM — 08:30 PM (Monday – Saturday)",
-    emergencyListingNote: "24/7 Emergency listing advisory available on Sundays and judicial recess."
+    emergencyListingNote: "24/7 Emergency listing advisory available on Sundays and judicial recess.",
+    googleBusinessUrl: "https://share.google/DWN0Xox7NNa1ziBn6"
   },
   buttons: {
     callAdvocateText: "Call Advocate",
@@ -258,7 +259,11 @@ class CMSService {
           ...parsed,
           seo: { ...DEFAULT_CMS_CONFIG.seo, ...(parsed.seo || {}) },
           theme: { ...DEFAULT_CMS_CONFIG.theme, ...(parsed.theme || {}) },
-          contacts: { ...DEFAULT_CMS_CONFIG.contacts, ...(parsed.contacts || {}) },
+          contacts: { 
+            ...DEFAULT_CMS_CONFIG.contacts, 
+            ...(parsed.contacts || {}),
+            googleBusinessUrl: parsed.contacts?.googleBusinessUrl || DEFAULT_CMS_CONFIG.contacts.googleBusinessUrl
+          },
           buttons: { ...DEFAULT_CMS_CONFIG.buttons, ...(parsed.buttons || {}) },
           hero: { ...DEFAULT_CMS_CONFIG.hero, ...(parsed.hero || {}) },
           leadership: { ...DEFAULT_CMS_CONFIG.leadership, ...(parsed.leadership || {}) },

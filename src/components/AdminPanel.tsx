@@ -1322,6 +1322,22 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                     className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
                   />
                 </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">
+                    Google My Business Profile Link (Search & Maps Identity)
+                  </label>
+                  <input
+                    type="url"
+                    value={config.contacts.googleBusinessUrl || ""}
+                    onChange={(e) => setConfig({ ...config, contacts: { ...config.contacts, googleBusinessUrl: e.target.value } })}
+                    placeholder="https://share.google/DWN0Xox7NNa1ziBn6"
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-blue-400 font-mono text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Connects directly to Google Search Knowledge Panel and Google Maps profile.
+                  </p>
+                </div>
               </div>
 
               {/* CHAMBER ADDRESSES */}

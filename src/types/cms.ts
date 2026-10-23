@@ -101,6 +101,7 @@ export interface SiteCMSConfig {
     delhiHighCourtLiaison: string;
     officeHours: string;
     emergencyListingNote: string;
+    googleBusinessUrl?: string;
   };
   buttons: {
     callAdvocateText: string;
