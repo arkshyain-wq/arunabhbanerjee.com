@@ -220,9 +220,30 @@ class CMSService {
     };
   }
 
+  private sanitizeProhibitedTerms<T>(obj: T): T {
+    if (typeof obj === "string") {
+      let cleaned = (obj as string)
+        .replace(/sovereign\s+justice/gi, "Constitutional Justice")
+        .replace(/sovereign/gi, "Constitutional")
+        .replace(/professor/gi, "Advocate");
+      return cleaned as unknown as T;
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.sanitizeProhibitedTerms(item)) as unknown as T;
+    }
+    if (obj !== null && typeof obj === "object") {
+      const result: any = {};
+      for (const key of Object.keys(obj)) {
+        result[key] = this.sanitizeProhibitedTerms((obj as any)[key]);
+      }
+      return result as T;
+    }
+    return obj;
+  }
+
   public async saveConfig(newConfig: SiteCMSConfig): Promise<boolean> {
     try {
-      this.config = { ...newConfig };
+      this.config = this.sanitizeProhibitedTerms({ ...newConfig });
       localStorage.setItem(CMS_STORAGE_KEY, JSON.stringify(this.config));
       this.applyTheme(this.config.theme);
       this.applySEO(this.config.seo);
@@ -241,7 +262,7 @@ class CMSService {
   }
 
   public resetToDefaultConfig(): SiteCMSConfig {
-    this.config = JSON.parse(JSON.stringify(DEFAULT_CMS_CONFIG));
+    this.config = this.sanitizeProhibitedTerms(JSON.parse(JSON.stringify(DEFAULT_CMS_CONFIG)));
     localStorage.setItem(CMS_STORAGE_KEY, JSON.stringify(this.config));
     this.applyTheme(this.config.theme);
     this.applySEO(this.config.seo);
@@ -254,7 +275,7 @@ class CMSService {
       const stored = localStorage.getItem(CMS_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        return {
+        const merged: SiteCMSConfig = {
           ...DEFAULT_CMS_CONFIG,
           ...parsed,
           seo: { ...DEFAULT_CMS_CONFIG.seo, ...(parsed.seo || {}) },
@@ -269,11 +290,18 @@ class CMSService {
           leadership: { ...DEFAULT_CMS_CONFIG.leadership, ...(parsed.leadership || {}) },
           firebase: { ...DEFAULT_CMS_CONFIG.firebase, ...(parsed.firebase || {}) }
         };
+        const cleaned = this.sanitizeProhibitedTerms(merged);
+        if (stored.toLowerCase().includes("sovereign") || stored.toLowerCase().includes("professor")) {
+          try {
+            localStorage.setItem(CMS_STORAGE_KEY, JSON.stringify(cleaned));
+          } catch (e) {}
+        }
+        return cleaned;
       }
     } catch (e) {
       console.warn("Could not parse saved config, using default", e);
     }
-    return JSON.parse(JSON.stringify(DEFAULT_CMS_CONFIG));
+    return this.sanitizeProhibitedTerms(JSON.parse(JSON.stringify(DEFAULT_CMS_CONFIG)));
   }
 
   private notifyConfigSubscribers() {
