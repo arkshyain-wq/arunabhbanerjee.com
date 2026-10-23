@@ -628,75 +628,17 @@ export default function App() {
       </section>
 
       {/* =========================================================================
-          CHAMBER STRENGTHS & KEY METRICS STRIP
+          2. CLIENT CATEGORIES (Individuals, Corporate, NGOs, Trusts & NRIs)
       ========================================================================= */}
-      <section className="border-b border-[#d4af37]/20 bg-[#090b11] py-5 px-4 sm:px-6 relative z-10 shadow-inner">
-        <div className="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 text-center divide-y lg:divide-y-0 lg:divide-x divide-gray-800/80">
-          
-          {/* Metric 1: Chamber Team Strength */}
-          <div className="p-2 sm:p-3 flex flex-col items-center justify-center">
-            <div className="flex items-center gap-2 text-[#dbb657] mb-1">
-              <Users className="w-5 h-5 text-[#dbb657]" />
-              <span className="font-serif text-2xl sm:text-3xl font-bold">12</span>
-            </div>
-            <span className="text-xs font-semibold text-white tracking-wide">Advocates Team</span>
-            <span className="text-[10px] text-gray-400 font-mono mt-0.5">Led by Advocate Arunabh Banerjee</span>
-          </div>
-
-          {/* Metric 2: Judicial Jurisdictions */}
-          <div className="p-2 sm:p-3 flex flex-col items-center justify-center">
-            <div className="flex items-center gap-2 text-[#dbb657] mb-1">
-              <Scale className="w-5 h-5 text-[#dbb657]" />
-              <span className="font-serif text-base sm:text-lg font-bold">Supreme Court</span>
-            </div>
-            <span className="text-xs font-semibold text-white tracking-wide">& Delhi High Court</span>
-            <span className="text-[10px] text-gray-400 font-mono mt-0.5">Appellate & Trial Litigation</span>
-          </div>
-
-          {/* Metric 3: Client Representation Sectors */}
-          <div className="p-2 sm:p-3 flex flex-col items-center justify-center pt-4 lg:pt-3">
-            <div className="flex items-center gap-2 text-[#dbb657] mb-1">
-              <Shield className="w-5 h-5 text-[#dbb657]" />
-              <span className="font-serif text-2xl sm:text-3xl font-bold">5</span>
-            </div>
-            <span className="text-xs font-semibold text-white tracking-wide">Client Sectors</span>
-            <span className="text-[10px] text-gray-400 font-mono mt-0.5">Individuals, Corporate, NGOs, Trusts & NRIs</span>
-          </div>
-
-          {/* Metric 4: Direct Legal Helpline Access */}
-          <div className="p-2 sm:p-3 flex flex-col items-center justify-center pt-4 lg:pt-3">
-            <div className="flex items-center gap-2 text-emerald-400 mb-1">
-              <MessageSquare className="w-5 h-5 text-emerald-400" />
-              <span className="font-serif text-base sm:text-lg font-bold">Direct Helpline</span>
-            </div>
-            <span className="text-xs font-semibold text-white tracking-wide">Instant Consultation</span>
-            <a 
-              href={`https://wa.me/919810703335?text=${encodeURIComponent("Hello Advocate Arunabh Banerjee, I am contacting you for legal consultation and representation.")}`}
-              onClick={handleDirectNumberClick}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[10px] text-emerald-400 hover:text-emerald-300 font-mono mt-0.5 cursor-pointer underline underline-offset-2"
-              title="Chat with Chamber on WhatsApp"
-            >
-              +91 98107 03335 (WhatsApp & Call)
-            </a>
-          </div>
-
-        </div>
-      </section>
-
-      {/* =========================================================================
-          3. CLIENT CATEGORIES (Individuals, Corporate, NGOs, Trusts & NRIs)
-      ========================================================================= */}
-      <section id="clients" className="py-14 md:py-18 border-b border-[#d4af37]/15 relative bg-[#08090e]">
+      <section id="clients" className="py-12 md:py-18 border-b border-[#d4af37]/15 relative bg-[#08090e]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
-          <div className="text-center space-y-2 mb-10">
+          <div className="text-center space-y-2 mb-8 sm:mb-10">
             <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-[#d4af37] font-semibold inline-flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-[#d4af37]" />
               Clientele Representation
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-medium text-white tracking-tight">
+            <h2 className="font-serif text-2xl sm:text-4xl font-medium text-white tracking-tight">
               Client Categories
             </h2>
             <p className="text-xs sm:text-sm text-gray-400 max-w-xl mx-auto">
@@ -704,7 +646,7 @@ export default function App() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
             {[
               {
                 id: "Individuals",
@@ -736,8 +678,9 @@ export default function App() {
                 subtitle: "Non-Resident Indian Counsel",
                 icon: Globe
               }
-            ].map((cat) => {
+            ].map((cat, idx) => {
               const IconComp = cat.icon;
+              const isLastOdd = idx === 4;
               return (
                 <div 
                   key={cat.id} 
@@ -745,25 +688,28 @@ export default function App() {
                     setFormData(prev => ({ ...prev, clientCategory: cat.id }));
                     scrollToSection("booking");
                   }}
-                  className="bg-[#10131c] border border-gray-800/90 hover:border-[#d4af37]/70 rounded-xs p-5 flex flex-col justify-between transition-all duration-300 group hover:shadow-[0_8px_25px_rgba(212,175,55,0.12)] hover:-translate-y-1 cursor-pointer"
+                  className={`${isLastOdd ? "col-span-2 lg:col-span-1" : "col-span-1"} bg-[#10131c] border border-gray-800/90 hover:border-[#d4af37]/70 rounded-xs p-3.5 sm:p-5 flex flex-col justify-between transition-all duration-300 group hover:shadow-[0_8px_25px_rgba(212,175,55,0.12)] hover:-translate-y-1 cursor-pointer`}
                 >
-                  <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-xs bg-[#171b26] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] group-hover:scale-105 group-hover:border-[#d4af37] transition-all">
-                      <IconComp className="w-5 h-5 text-[#d4af37]" />
+                  <div className="space-y-2 sm:space-y-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xs bg-[#171b26] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] group-hover:scale-105 group-hover:border-[#d4af37] transition-all">
+                      <IconComp className="w-4 h-4 sm:w-5 sm:h-5 text-[#d4af37]" />
                     </div>
                     <div>
-                      <h3 className="font-serif text-lg font-bold text-white group-hover:text-[#f5d77f] transition-colors">
+                      <h3 className="font-serif text-sm sm:text-lg font-bold text-white group-hover:text-[#f5d77f] transition-colors leading-snug">
                         {cat.name}
                       </h3>
-                      <span className="text-[10px] text-[#d4af37] uppercase font-mono block mt-1 tracking-wide font-semibold">
+                      <span className="text-[9px] sm:text-[10px] text-[#d4af37] uppercase font-mono block mt-1 tracking-wide font-semibold leading-tight">
                         {cat.subtitle}
                       </span>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-gray-800/80 flex items-center justify-between text-xs text-gray-300 group-hover:text-[#d4af37] transition-colors w-full">
-                    <span className="text-[11px] font-medium uppercase tracking-wider">Book Consultation</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  <div className="mt-3 pt-2.5 sm:mt-4 sm:pt-3 border-t border-gray-800/80 flex items-center justify-between text-[10px] sm:text-xs text-gray-300 group-hover:text-[#d4af37] transition-colors w-full">
+                    <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-wider">
+                      <span className="sm:hidden">Consult</span>
+                      <span className="hidden sm:inline">Book Consultation</span>
+                    </span>
+                    <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
               );
@@ -795,7 +741,7 @@ export default function App() {
           </div>
 
           {/* Booking Container */}
-          <div className="bg-[#10131c] border border-[#d4af37]/40 rounded-xs p-6 sm:p-9 shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
+          <div className="bg-[#10131c] border border-[#d4af37]/40 rounded-xs p-4 sm:p-8 md:p-9 shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
             
             {/* Case: Booking Confirmed Card */}
             {confirmedBooking ? (
@@ -899,10 +845,10 @@ export default function App() {
                 {/* Client Category Selector */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs uppercase tracking-wider text-gray-300 font-medium">
+                    <label className="block text-xs uppercase tracking-wider text-gray-200 font-semibold">
                       Client Category <span className="text-[#d4af37]">*</span>
                     </label>
-                    <span className="text-[10px] text-gray-500 font-mono">Individuals • Corporate • NGOs • Trusts • NRIs</span>
+                    <span className="hidden sm:inline text-[10px] text-gray-400 font-mono">Individuals • Corporate • NGOs • Trusts • NRIs</span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                     {[
@@ -919,7 +865,7 @@ export default function App() {
                           key={item.id}
                           type="button"
                           onClick={() => setFormData(prev => ({ ...prev, clientCategory: item.id }))}
-                          className={`py-2 px-2 text-xs font-semibold rounded-xs border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                          className={`${item.id === "NRIs" ? "col-span-2 sm:col-span-1" : "col-span-1"} py-2.5 sm:py-2 px-2 text-xs font-semibold rounded-xs border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                             isSelected
                               ? "bg-gradient-to-r from-[#d4af37]/25 to-[#b28d2f]/20 border-[#d4af37] text-[#f5d77f] shadow-[0_0_12px_rgba(212,175,55,0.25)] font-bold"
                               : "bg-[#151926] border-gray-700/80 text-gray-400 hover:text-white hover:border-gray-600"
@@ -1054,6 +1000,64 @@ export default function App() {
               </form>
             )}
 
+          </div>
+
+        </div>
+      </section>
+
+      {/* =========================================================================
+          CHAMBER STRENGTHS & KEY METRICS STRIP (Positioned under Booking Section)
+      ========================================================================= */}
+      <section className="border-b border-[#d4af37]/20 bg-[#090b11] py-6 sm:py-8 px-4 sm:px-6 relative z-10 shadow-inner">
+        <div className="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 text-center">
+          
+          {/* Metric 1: Chamber Team Strength */}
+          <div className="p-3.5 sm:p-4 rounded-xs bg-[#10131c]/70 border border-gray-800/80 hover:border-[#d4af37]/40 transition-colors flex flex-col items-center justify-center">
+            <div className="flex items-center gap-2 text-[#dbb657] mb-1">
+              <Users className="w-5 h-5 text-[#dbb657]" />
+              <span className="font-serif text-2xl sm:text-3xl font-bold">12</span>
+            </div>
+            <span className="text-xs font-semibold text-white tracking-wide">Advocates Team</span>
+            <span className="text-[10px] text-gray-400 font-mono mt-0.5">Led by Advocate Arunabh Banerjee</span>
+          </div>
+
+          {/* Metric 2: Judicial Jurisdictions */}
+          <div className="p-3.5 sm:p-4 rounded-xs bg-[#10131c]/70 border border-gray-800/80 hover:border-[#d4af37]/40 transition-colors flex flex-col items-center justify-center">
+            <div className="flex items-center gap-2 text-[#dbb657] mb-1">
+              <Scale className="w-5 h-5 text-[#dbb657]" />
+              <span className="font-serif text-base sm:text-lg font-bold">Supreme Court</span>
+            </div>
+            <span className="text-xs font-semibold text-white tracking-wide">& Delhi High Court</span>
+            <span className="text-[10px] text-gray-400 font-mono mt-0.5">Appellate & Trial Litigation</span>
+          </div>
+
+          {/* Metric 3: Client Representation Sectors */}
+          <div className="p-3.5 sm:p-4 rounded-xs bg-[#10131c]/70 border border-gray-800/80 hover:border-[#d4af37]/40 transition-colors flex flex-col items-center justify-center">
+            <div className="flex items-center gap-2 text-[#dbb657] mb-1">
+              <Shield className="w-5 h-5 text-[#dbb657]" />
+              <span className="font-serif text-2xl sm:text-3xl font-bold">5</span>
+            </div>
+            <span className="text-xs font-semibold text-white tracking-wide">Client Sectors</span>
+            <span className="text-[10px] text-gray-400 font-mono mt-0.5">Individuals, Corporate, NGOs, Trusts & NRIs</span>
+          </div>
+
+          {/* Metric 4: Direct Legal Helpline Access */}
+          <div className="p-3.5 sm:p-4 rounded-xs bg-[#10131c]/70 border border-gray-800/80 hover:border-[#d4af37]/40 transition-colors flex flex-col items-center justify-center">
+            <div className="flex items-center gap-2 text-emerald-400 mb-1">
+              <MessageSquare className="w-5 h-5 text-emerald-400" />
+              <span className="font-serif text-base sm:text-lg font-bold">Direct Helpline</span>
+            </div>
+            <span className="text-xs font-semibold text-white tracking-wide">Instant Consultation</span>
+            <a 
+              href={`https://wa.me/919810703335?text=${encodeURIComponent("Hello Advocate Arunabh Banerjee, I am contacting you for legal consultation and representation.")}`}
+              onClick={handleDirectNumberClick}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] text-emerald-400 hover:text-emerald-300 font-mono mt-0.5 cursor-pointer underline underline-offset-2"
+              title="Chat with Chamber on WhatsApp"
+            >
+              +91 98107 03335 (WhatsApp & Call)
+            </a>
           </div>
 
         </div>
