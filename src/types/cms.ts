@@ -129,6 +129,7 @@ export interface SiteCMSConfig {
     secondaryBadge: string;
     courtLine: string;
     humanRightsLine: string;
+    teamBadge?: string;
     bioText: string;
     portraitUrl: string;
     yearsExperience: string;

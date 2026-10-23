@@ -431,12 +431,21 @@ export default function App() {
             {/* Left Content (desktop) / Stacked (mobile) */}
             <div className="lg:col-span-7 space-y-6 text-left">
               
-              {/* Judicial Jurisdiction Ribbon */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#d4af37]/35 bg-[#121520]/80">
-                <Scale className="w-3.5 h-3.5 text-[#d4af37]" />
-                <span className="text-[11px] font-medium tracking-widest uppercase text-[#d4af37]">
-                  {config.hero?.courtLine || "Supreme Court of India & Delhi High Court"}
-                </span>
+              {/* Judicial Jurisdiction Ribbon & Team Strength Badge */}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#d4af37]/35 bg-[#121520]/80">
+                  <Scale className="w-3.5 h-3.5 text-[#d4af37]" />
+                  <span className="text-[11px] font-medium tracking-widest uppercase text-[#d4af37]">
+                    {config.hero?.courtLine || "Supreme Court of India & Delhi High Court"}
+                  </span>
+                </div>
+
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-500/35 bg-emerald-950/40 text-emerald-300">
+                  <Users className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-[11px] font-mono tracking-wider font-semibold">
+                    {config.hero?.teamBadge || "Leading a Chamber Team of 12 Advocates"}
+                  </span>
+                </div>
               </div>
 
               {/* Name & Title */}
@@ -615,6 +624,64 @@ export default function App() {
             </div>
 
           </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          CHAMBER STRENGTHS & KEY METRICS STRIP
+      ========================================================================= */}
+      <section className="border-b border-[#d4af37]/20 bg-[#090b11] py-5 px-4 sm:px-6 relative z-10 shadow-inner">
+        <div className="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 text-center divide-y lg:divide-y-0 lg:divide-x divide-gray-800/80">
+          
+          {/* Metric 1: Chamber Team Strength */}
+          <div className="p-2 sm:p-3 flex flex-col items-center justify-center">
+            <div className="flex items-center gap-2 text-[#dbb657] mb-1">
+              <Users className="w-5 h-5 text-[#dbb657]" />
+              <span className="font-serif text-2xl sm:text-3xl font-bold">12</span>
+            </div>
+            <span className="text-xs font-semibold text-white tracking-wide">Advocates Team</span>
+            <span className="text-[10px] text-gray-400 font-mono mt-0.5">Led by Advocate Arunabh Banerjee</span>
+          </div>
+
+          {/* Metric 2: Judicial Jurisdictions */}
+          <div className="p-2 sm:p-3 flex flex-col items-center justify-center">
+            <div className="flex items-center gap-2 text-[#dbb657] mb-1">
+              <Scale className="w-5 h-5 text-[#dbb657]" />
+              <span className="font-serif text-base sm:text-lg font-bold">Supreme Court</span>
+            </div>
+            <span className="text-xs font-semibold text-white tracking-wide">& Delhi High Court</span>
+            <span className="text-[10px] text-gray-400 font-mono mt-0.5">Appellate & Trial Litigation</span>
+          </div>
+
+          {/* Metric 3: Client Representation Sectors */}
+          <div className="p-2 sm:p-3 flex flex-col items-center justify-center pt-4 lg:pt-3">
+            <div className="flex items-center gap-2 text-[#dbb657] mb-1">
+              <Shield className="w-5 h-5 text-[#dbb657]" />
+              <span className="font-serif text-2xl sm:text-3xl font-bold">5</span>
+            </div>
+            <span className="text-xs font-semibold text-white tracking-wide">Client Sectors</span>
+            <span className="text-[10px] text-gray-400 font-mono mt-0.5">Individuals, Corporate, NGOs, Trusts & NRIs</span>
+          </div>
+
+          {/* Metric 4: Direct Legal Helpline Access */}
+          <div className="p-2 sm:p-3 flex flex-col items-center justify-center pt-4 lg:pt-3">
+            <div className="flex items-center gap-2 text-emerald-400 mb-1">
+              <MessageSquare className="w-5 h-5 text-emerald-400" />
+              <span className="font-serif text-base sm:text-lg font-bold">Direct Helpline</span>
+            </div>
+            <span className="text-xs font-semibold text-white tracking-wide">Instant Consultation</span>
+            <a 
+              href={`https://wa.me/919810703335?text=${encodeURIComponent("Hello Advocate Arunabh Banerjee, I am contacting you for legal consultation and representation.")}`}
+              onClick={handleDirectNumberClick}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] text-emerald-400 hover:text-emerald-300 font-mono mt-0.5 cursor-pointer underline underline-offset-2"
+              title="Chat with Chamber on WhatsApp"
+            >
+              +91 98107 03335 (WhatsApp & Call)
+            </a>
+          </div>
+
         </div>
       </section>
 

@@ -74,7 +74,8 @@ export const DEFAULT_CMS_CONFIG: SiteCMSConfig = {
     secondaryBadge: "Senior Counsel",
     courtLine: "Supreme Court of India & Delhi High Court",
     humanRightsLine: "President – C.P.D.R India Human Rights, Delhi",
-    bioText: "Legal consultation and representation across criminal, matrimonial, commercial, constitutional, and human rights matters.",
+    teamBadge: "Leading a Chamber Team of 12 Advocates",
+    bioText: "Advocate Arunabh Banerjee leads a dedicated chamber team of 12 advocates, providing high-caliber legal counsel and courtroom representation across criminal defense, anticipatory & regular bail jurisprudence, matrimonial disputes, corporate matters, and constitutional advocacy before the Supreme Court of India and High Court of Delhi.",
     portraitUrl: "",
     yearsExperience: "15+ YEARS",
     experienceText: "Senior Advocacy Practice"

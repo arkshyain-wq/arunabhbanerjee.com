@@ -1215,6 +1215,17 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                 </div>
 
                 <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Chamber Team Strength Badge</label>
+                  <input
+                    type="text"
+                    placeholder="Leading a Chamber Team of 12 Advocates"
+                    value={config.hero.teamBadge || "Leading a Chamber Team of 12 Advocates"}
+                    onChange={(e) => setConfig({ ...config, hero: { ...config.hero, teamBadge: e.target.value } })}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-emerald-400 font-medium text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+
+                <div>
                   <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Chamber Litigation Bio</label>
                   <textarea
                     rows={4}
