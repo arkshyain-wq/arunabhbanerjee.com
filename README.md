@@ -1,4 +1,4 @@
-# Professor Arunabh Banerjee - Official Website
+# Advocate Arunabh Banerjee - Official Website
 
 > **Senior Advocate, Supreme Court of India & High Court of Delhi**  
 > Official web portfolio showcasing constitutional practice, landmark litigations, legal research, publications, and chamber contact.
@@ -7,7 +7,7 @@
 
 ## 🏛️ About the Project
 
-This repository hosts the official web application for **Professor Arunabh Banerjee** (`arunabhbanerjee.com`). Built with a high-end legal aesthetic, comprehensive practice area details, notable jurisprudence, and bilingual accessibility.
+This repository hosts the official web application for **Advocate Arunabh Banerjee** (`arunabhbanerjee.com`). Built with a high-end legal aesthetic, comprehensive practice area details, notable jurisprudence, and bilingual accessibility.
 
 ### Key Features
 - **Constitutional & Supreme Court Practice:** Overview of landmark jurisprudence and appellate work.
@@ -55,4 +55,4 @@ npm run preview
 ---
 
 ## 📄 License
-All rights reserved © Professor Arunabh Banerjee.
+All rights reserved © Advocate Arunabh Banerjee.

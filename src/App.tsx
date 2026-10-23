@@ -760,7 +760,7 @@ END:VCARD`;
                   <div className="h-[2px] w-8 bg-gradient-to-r from-transparent to-[#dbb657]"></div>
                   <span className="font-serif text-xs uppercase tracking-widest text-[#dbb657] font-semibold flex items-center gap-1.5">
                     <Scale className="w-3.5 h-3.5 text-[#dbb657]" />
-                    {lang === 'EN' ? 'Sovereign Justice & Human Rights' : 'सार्वभौम न्याय और मानवाधिकार'}
+                    {lang === 'EN' ? 'Constitutional Justice & Human Rights' : 'संवैधानिक न्याय और मानवाधिकार'}
                   </span>
                   <div className="h-[2px] w-8 bg-gradient-to-l from-transparent to-[#dbb657]"></div>
                 </div>
@@ -1004,7 +1004,7 @@ END:VCARD`;
                     <Shield className="w-5 h-5 text-[#dbb657]" />
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest text-gray-400 leading-none">Sovereign State Emblem</p>
+                    <p className="text-[10px] uppercase tracking-widest text-gray-400 leading-none">State Emblem of India</p>
                     <p className="text-[#dbb657] text-xs font-bold font-serif uppercase tracking-wider mt-0.5">सत्यमेव जयते</p>
                   </div>
                 </div>
@@ -1474,8 +1474,8 @@ END:VCARD`;
                 <Scale className="w-8 h-8 text-[#dbb657]" />
                 <p className="font-serif italic text-sm text-gray-200">
                   "{lang === 'EN' 
-                    ? 'True advocacy does not step back in front of executive overreach. We stand as shields for the sovereign Indian citizen under constitutional mandates.'
-                    : 'सच्ची वकालत प्रशासनिक अराजकता के समक्ष घुटने नहीं टेकती। हम संवैधानिक जनादेश के तहत संप्रभु भारतीय नागरिकों के ढाल के रूप में खड़े हैं।'
+                    ? 'True advocacy does not step back in front of executive overreach. We stand as shields for every Indian citizen under constitutional mandates.'
+                    : 'सच्ची वकालत प्रशासनिक अराजकता के समक्ष घुटने नहीं टेकती। हम संवैधानिक जनादेश के तहत प्रत्येक भारतीय नागरिक के ढाल के रूप में खड़े हैं।'
                   }"
                 </p>
               </div>
@@ -2004,7 +2004,7 @@ END:VCARD`;
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-gray-500">
               <p className="font-mono text-[9px] text-[#dbb657]/60">
-                {lang === 'EN' ? 'Sovereign Digital Identity Verified' : 'भारतीय संप्रभु डिजिटल पहचान सत्यापित'} • CPDR-IND-2026
+                {lang === 'EN' ? 'Verified Digital Identity' : 'सत्यापित डिजिटल पहचान'} • CPDR-IND-2026
               </p>
               <span className="hidden sm:inline text-gray-700">•</span>
               <a 

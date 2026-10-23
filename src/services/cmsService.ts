@@ -59,7 +59,7 @@ export const DEFAULT_CMS_CONFIG: SiteCMSConfig = {
     downloadVcardText: "Save Contact (vCard)"
   },
   hero: {
-    tagline: "SOVEREIGN JUSTICE & HUMAN RIGHTS",
+    tagline: "CONSTITUTIONAL JUSTICE & HUMAN RIGHTS",
     titlePrefix: "ADVOCATE",
     name: "ARUNABH BANERJEE",
     roleBadge: "SUPREME COURT ADVOCATE",
