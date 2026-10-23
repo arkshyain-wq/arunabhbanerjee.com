@@ -162,7 +162,8 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     await cmsService.addLead({
       name: "Test Verification Client",
       phone: "+91 98107 03335",
-      caseType: "Criminal Defense & Bail",
+      clientCategory: "Corporate",
+      caseType: "Commercial Dispute & Arbitration",
       date: new Date().toISOString().split("T")[0],
       message: "Testing instant admin notification & real-time synchronization.",
       isUrgent: true
@@ -248,6 +249,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
       l.name.toLowerCase().includes(searchLeadQuery.toLowerCase()) ||
       l.phone.includes(searchLeadQuery) ||
       (l.email && l.email.toLowerCase().includes(searchLeadQuery.toLowerCase())) ||
+      (l.clientCategory && l.clientCategory.toLowerCase().includes(searchLeadQuery.toLowerCase())) ||
       l.caseType.toLowerCase().includes(searchLeadQuery.toLowerCase());
     
     if (leadStatusFilter === "all") return matchQuery;
@@ -771,7 +773,12 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <p className="font-bold text-white text-sm">{lead.name}</p>
-                          <span className="text-[10px] text-gray-400 font-mono">📅 Date: {lead.date || "Not set"}</span>
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            <span className="px-1.5 py-0.5 bg-[#dbb657]/15 text-[#dbb657] border border-[#dbb657]/40 rounded-xs text-[10px] font-mono font-bold">
+                              {lead.clientCategory || "Individuals"}
+                            </span>
+                            <span className="text-[10px] text-gray-400 font-mono">📅 {lead.date || "Not set"}</span>
+                          </div>
                         </div>
                         <select
                           value={lead.status}
@@ -859,6 +866,9 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                           <tr key={lead.id} className="hover:bg-gray-800/30 transition-colors">
                             <td className="py-3 px-4">
                               <p className="font-semibold text-white">{lead.name}</p>
+                              <span className="inline-block mt-0.5 px-1.5 py-0.5 bg-[#dbb657]/15 text-[#dbb657] border border-[#dbb657]/30 text-[9px] font-mono rounded-xs font-semibold">
+                                {lead.clientCategory || "Individuals"}
+                              </span>
                               {lead.email && <p className="text-[10px] text-gray-400">{lead.email}</p>}
                               {lead.message && (
                                 <p className="text-[11px] text-gray-300 italic mt-1 max-w-sm line-clamp-2">

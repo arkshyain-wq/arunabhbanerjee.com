@@ -171,6 +171,38 @@ export const DEFAULT_CMS_CONFIG: SiteCMSConfig = {
       timing: "10:30 AM – 04:30 PM"
     }
   ],
+  clientCategories: [
+    {
+      id: "individuals",
+      name: "Individuals",
+      subtitle: "Personal & Criminal Defense",
+      description: "Anticipatory & regular bail, matrimonial disputes, criminal defense, property litigation & fundamental rights protection."
+    },
+    {
+      id: "corporate",
+      name: "Corporate",
+      subtitle: "Commercial & Business Litigation",
+      description: "Contractual disputes, NCLT insolvency proceedings, commercial recovery, corporate arbitration & statutory compliance."
+    },
+    {
+      id: "ngos",
+      name: "NGOs",
+      subtitle: "Civil Society & Human Rights",
+      description: "Public interest litigation (PIL), fundamental freedoms, organizational governance & regulatory proceedings."
+    },
+    {
+      id: "trusts",
+      name: "Trusts",
+      subtitle: "Charitable & Endowment Disputes",
+      description: "Trust property administration, institutional governance, endowment compliance & appellate dispute resolution."
+    },
+    {
+      id: "nris",
+      name: "NRIs",
+      subtitle: "Non-Resident Indian Counsel",
+      description: "Cross-border litigation, ancestral land disputes, power of attorney litigation & High Court / Supreme Court advocacy."
+    }
+  ],
   firebase: {
     apiKey: "",
     authDomain: "",
@@ -288,6 +320,7 @@ class CMSService {
           buttons: { ...DEFAULT_CMS_CONFIG.buttons, ...(parsed.buttons || {}) },
           hero: { ...DEFAULT_CMS_CONFIG.hero, ...(parsed.hero || {}) },
           leadership: { ...DEFAULT_CMS_CONFIG.leadership, ...(parsed.leadership || {}) },
+          clientCategories: parsed.clientCategories || DEFAULT_CMS_CONFIG.clientCategories,
           firebase: { ...DEFAULT_CMS_CONFIG.firebase, ...(parsed.firebase || {}) }
         };
         const cleaned = this.sanitizeProhibitedTerms(merged);
@@ -592,15 +625,15 @@ class CMSService {
   }
 
   public exportLeadsCSV(): string {
-    const headers = ["ID", "Name", "Phone", "Email", "Case Type", "Preferred Date", "Time Slot", "Urgent", "Status", "Date Submitted", "Message", "Notes"];
+    const headers = ["ID", "Name", "Client Category", "Phone", "Email", "Case Matter", "Preferred Date", "Urgent", "Status", "Date Submitted", "Message", "Notes"];
     const rows = this.leads.map(lead => [
       `"${lead.id}"`,
       `"${lead.name.replace(/"/g, '""')}"`,
+      `"${lead.clientCategory || "Individuals"}"`,
       `"${lead.phone}"`,
       `"${lead.email || ""}"`,
       `"${lead.caseType}"`,
       `"${lead.date}"`,
-      `"${lead.timeSlot || ""}"`,
       lead.isUrgent ? "Yes" : "No",
       `"${lead.status}"`,
       `"${lead.createdAt}"`,

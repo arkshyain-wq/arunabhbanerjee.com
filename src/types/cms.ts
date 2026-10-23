@@ -25,11 +25,20 @@ export interface ChamberItem {
   timing: string;
 }
 
+export interface ClientCategoryItem {
+  id: string;
+  name: string;
+  subtitle: string;
+  description: string;
+  badge?: string;
+}
+
 export interface LeadItem {
   id: string;
   name: string;
   phone: string;
   email?: string;
+  clientCategory?: 'Individuals' | 'Corporate' | 'NGOs' | 'Trusts' | 'NRIs' | string;
   caseType: string;
   date: string;
   timeSlot?: string;
@@ -132,5 +141,6 @@ export interface SiteCMSConfig {
   practiceAreas: PracticeAreaItem[];
   notableMatters: NotableMatterItem[];
   chambers: ChamberItem[];
+  clientCategories?: ClientCategoryItem[];
   firebase: FirebaseCredentials;
 }

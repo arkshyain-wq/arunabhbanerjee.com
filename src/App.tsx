@@ -17,24 +17,32 @@ import {
   ExternalLink, 
   Copy,
   Check,
-  Send
+  Send,
+  User,
+  Building2,
+  Shield,
+  Award,
+  Globe,
+  ArrowRight,
+  Users
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 // @ts-ignore
 import arunabhPortrait from "./assets/images/Arunabh_Banerjee.jpeg";
 import AdminPanel from "./components/AdminPanel";
 import { cmsService } from "./services/cmsService";
-import { LeadItem } from "./types/cms";
+import { LeadItem, SiteCMSConfig } from "./types/cms";
 
 export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [config, setConfig] = useState<SiteCMSConfig>(cmsService.getConfig());
 
-  // Form State: Manual case subject entry, no time slots
+  // Form State: Manual case subject entry, client category selection, no time slots
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    clientCategory: "Individuals",
     caseSubject: "",
     date: "",
     description: ""
@@ -155,6 +163,7 @@ export default function App() {
       const savedLead = await cmsService.addLead({
         name: formData.name.trim(),
         phone: formData.phone.trim(),
+        clientCategory: formData.clientCategory,
         caseType: formData.caseSubject.trim(),
         date: formData.date,
         message: formData.description.trim(),
@@ -170,6 +179,7 @@ export default function App() {
       setFormData({
         name: "",
         phone: "",
+        clientCategory: "Individuals",
         caseSubject: "",
         date: formData.date,
         description: ""
@@ -226,9 +236,15 @@ export default function App() {
           <nav className="hidden md:flex items-center gap-8">
             <button
               onClick={() => scrollToSection("home")}
-              className="text-xs uppercase tracking-widest text-gray-300 hover:text-[#d4af37] transition-colors focus:outline-none font-medium"
+              className="text-xs uppercase tracking-widest text-gray-300 hover:text-[#d4af37] transition-colors focus:outline-none font-medium cursor-pointer"
             >
               Home
+            </button>
+            <button
+              onClick={() => scrollToSection("clients")}
+              className="text-xs uppercase tracking-widest text-gray-300 hover:text-[#d4af37] transition-colors focus:outline-none font-medium cursor-pointer"
+            >
+              Client Categories
             </button>
 
             {/* Prominent CTA */}
@@ -275,6 +291,12 @@ export default function App() {
                 className="block w-full text-left text-sm uppercase tracking-wider text-gray-300 hover:text-[#d4af37] py-2.5 border-b border-gray-800"
               >
                 Home
+              </button>
+              <button
+                onClick={() => scrollToSection("clients")}
+                className="block w-full text-left text-sm uppercase tracking-wider text-gray-300 hover:text-[#d4af37] py-2.5 border-b border-gray-800"
+              >
+                Client Categories
               </button>
               <button
                 onClick={() => scrollToSection("booking")}
@@ -409,7 +431,106 @@ export default function App() {
       </section>
 
       {/* =========================================================================
-          3. APPOINTMENT BOOKING (Manual case matter entry, no time slots)
+          3. CLIENT CATEGORIES (Individuals, Corporate, NGOs, Trusts & NRIs)
+      ========================================================================= */}
+      <section id="clients" className="py-14 md:py-18 border-b border-[#d4af37]/15 relative bg-[#08090e]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          
+          <div className="text-center space-y-2 mb-10">
+            <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-[#d4af37] font-semibold inline-flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-[#d4af37]" />
+              Clientele Representation
+            </span>
+            <h2 className="font-serif text-3xl sm:text-4xl font-medium text-white tracking-tight">
+              Client Categories
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-400 max-w-xl mx-auto">
+              Chamber legal advisory and courtroom representation across personal, institutional, non-profit, and cross-border client categories.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {[
+              {
+                id: "Individuals",
+                name: "Individuals",
+                subtitle: "Personal & Criminal Defense",
+                desc: "Anticipatory & regular bail, criminal trials, matrimonial disputes, fundamental rights & civil litigation.",
+                icon: User
+              },
+              {
+                id: "Corporate",
+                name: "Corporate",
+                subtitle: "Commercial & Business Litigation",
+                desc: "High-value commercial contracts, NCLT insolvency proceedings, corporate arbitration, debt recovery & statutory defense.",
+                icon: Building2
+              },
+              {
+                id: "NGOs",
+                name: "NGOs",
+                subtitle: "Civil Society & Human Rights",
+                desc: "Protection of democratic rights, human rights advocacy, public interest litigations (PIL) & regulatory compliance.",
+                icon: Shield
+              },
+              {
+                id: "Trusts",
+                name: "Trusts",
+                subtitle: "Charitable & Endowment Disputes",
+                desc: "Trust property administration, institutional governance disputes, public charitable foundations & endowment compliance.",
+                icon: Award
+              },
+              {
+                id: "NRIs",
+                name: "NRIs",
+                subtitle: "Non-Resident Indian Counsel",
+                desc: "Cross-border litigation, ancestral real estate disputes, power of attorney litigation & High Court / Supreme Court representation.",
+                icon: Globe
+              }
+            ].map((cat) => {
+              const IconComp = cat.icon;
+              return (
+                <div 
+                  key={cat.id} 
+                  className="bg-[#10131c] border border-gray-800 hover:border-[#d4af37]/60 rounded-xs p-5 flex flex-col justify-between transition-all duration-300 group hover:shadow-[0_8px_30px_rgba(212,175,55,0.1)] hover:-translate-y-0.5"
+                >
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-xs bg-[#171b26] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] group-hover:scale-110 transition-transform">
+                      <IconComp className="w-5 h-5 text-[#d4af37]" />
+                    </div>
+                    <div>
+                      <h3 className="font-serif text-lg font-bold text-white group-hover:text-[#f5d77f] transition-colors">
+                        {cat.name}
+                      </h3>
+                      <span className="text-[10px] text-[#d4af37] uppercase font-mono block mt-0.5">
+                        {cat.subtitle}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      {cat.desc}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, clientCategory: cat.id }));
+                      scrollToSection("booking");
+                    }}
+                    className="mt-4 pt-3 border-t border-gray-800/80 flex items-center justify-between text-xs text-gray-300 group-hover:text-[#d4af37] transition-colors cursor-pointer w-full text-left"
+                  >
+                    <span className="text-[11px] font-medium uppercase tracking-wider">Book Consultation</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </section>
+
+      {/* =========================================================================
+          4. APPOINTMENT BOOKING (Manual case matter entry, no time slots)
       ========================================================================= */}
       <section id="booking" className="py-16 md:py-20 border-b border-[#d4af37]/15 relative bg-[#0a0c12]">
         
@@ -472,6 +593,11 @@ export default function App() {
                   </div>
 
                   <div className="flex items-center justify-between">
+                    <span className="text-gray-400">Client Category:</span>
+                    <span className="text-[#d4af37] font-semibold">{confirmedBooking.clientCategory || "Individuals"}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
                     <span className="text-gray-400">Contact:</span>
                     <span className="text-white">{confirmedBooking.phone}</span>
                   </div>
@@ -493,7 +619,7 @@ export default function App() {
                   
                   <a
                     href={`https://wa.me/919810703335?text=${encodeURIComponent(
-                      `Hello Advocate Arunabh Banerjee, I have scheduled a consultation on arunabhbanerjee.com.\n\nBooking ID: ${confirmedBooking.id}\nName: ${confirmedBooking.name}\nPreferred Date: ${confirmedBooking.date}\nSubject Matter: ${confirmedBooking.caseType}`
+                      `Hello Advocate Arunabh Banerjee, I have scheduled a consultation on arunabhbanerjee.com.\n\nBooking ID: ${confirmedBooking.id}\nName: ${confirmedBooking.name}\nCategory: ${confirmedBooking.clientCategory || "Individuals"}\nPreferred Date: ${confirmedBooking.date}\nSubject Matter: ${confirmedBooking.caseType}`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -525,6 +651,43 @@ export default function App() {
                     <span>{formError}</span>
                   </div>
                 )}
+
+                {/* Client Category Selector */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs uppercase tracking-wider text-gray-300 font-medium">
+                      Client Category <span className="text-[#d4af37]">*</span>
+                    </label>
+                    <span className="text-[10px] text-gray-500 font-mono">Individuals • Corporate • NGOs • Trusts • NRIs</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    {[
+                      { id: "Individuals", label: "Individuals", icon: User },
+                      { id: "Corporate", label: "Corporate", icon: Building2 },
+                      { id: "NGOs", label: "NGOs", icon: Shield },
+                      { id: "Trusts", label: "Trusts", icon: Award },
+                      { id: "NRIs", label: "NRIs", icon: Globe }
+                    ].map((item) => {
+                      const IconComponent = item.icon;
+                      const isSelected = formData.clientCategory === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, clientCategory: item.id }))}
+                          className={`py-2 px-2 text-xs font-semibold rounded-xs border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                            isSelected
+                              ? "bg-gradient-to-r from-[#d4af37]/25 to-[#b28d2f]/20 border-[#d4af37] text-[#f5d77f] shadow-[0_0_12px_rgba(212,175,55,0.25)] font-bold"
+                              : "bg-[#151926] border-gray-700/80 text-gray-400 hover:text-white hover:border-gray-600"
+                          }`}
+                        >
+                          <IconComponent className={`w-3.5 h-3.5 ${isSelected ? "text-[#d4af37]" : "text-gray-400"}`} />
+                          <span>{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
                 {/* Row 1: Full Name & Phone Number */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
