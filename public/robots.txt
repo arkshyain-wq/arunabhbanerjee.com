@@ -1,6 +1,35 @@
+# Robots.txt for Chambers of Advocate Arunabh Banerjee (https://arunabhbanerjee.com)
+# Supreme Court & High Court Advocate (All Courts & Tribunals)
+
 User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /#admin
 
+# Search Engine Specific Crawlers
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+
+User-agent: Googlebot-Image
+Allow: /
+Allow: /assets/
+Allow: /assets/images/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Crawl-delay: 1
+
+User-agent: Applebot
+Allow: /
+Disallow: /admin
+
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /admin
+
+# Host & Sitemap Directives
+Host: https://arunabhbanerjee.com
 Sitemap: https://arunabhbanerjee.com/sitemap.xml
+

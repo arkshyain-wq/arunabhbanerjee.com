@@ -788,7 +788,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                   <div className="p-3 bg-[#0a0b10] border border-gray-800 rounded-xs">
                     <span className="text-[10px] uppercase font-mono text-gray-500 block">🗺️ Maps Directions</span>
                     <p className="text-xl sm:text-2xl font-bold font-mono text-blue-400 mt-1">{visitorStats.clicks?.mapsClicks || 0}</p>
-                    <span className="text-[9px] text-gray-400 font-mono truncate block">Supreme Court & Saket</span>
+                    <span className="text-[9px] text-gray-400 font-mono truncate block">Saket, CR Park &amp; Panchsheel</span>
                   </div>
                 </div>
               </div>
@@ -1603,21 +1603,67 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                 </h3>
 
                 <div>
-                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Supreme Court Compound Chamber</label>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Chamber (Saket Courts Complex)</label>
                   <input
                     type="text"
-                    value={config.contacts.supremeCourtChamber}
-                    onChange={(e) => setConfig({ ...config, contacts: { ...config.contacts, supremeCourtChamber: e.target.value } })}
+                    value={config.contacts.saketCourtsChamber}
+                    onChange={(e) => {
+                      const newSaket = e.target.value;
+                      const updatedChambers = (config.chambers || []).map(ch => 
+                        ch.name === "Chamber" || ch.id === "saket_chamber" || ch.id === "saket" 
+                          ? { ...ch, address: newSaket } 
+                          : ch
+                      );
+                      setConfig({ 
+                        ...config, 
+                        contacts: { ...config.contacts, saketCourtsChamber: newSaket, supremeCourtChamber: newSaket },
+                        chambers: updatedChambers
+                      });
+                    }}
                     className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Saket Courts Complex Chamber</label>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Office (CR Park)</label>
                   <input
                     type="text"
-                    value={config.contacts.saketCourtsChamber}
-                    onChange={(e) => setConfig({ ...config, contacts: { ...config.contacts, saketCourtsChamber: e.target.value } })}
+                    value={config.contacts.crParkOffice || "M-18, Ground Floor, CR Park, New Delhi - 110019"}
+                    onChange={(e) => {
+                      const newOffice = e.target.value;
+                      const updatedChambers = (config.chambers || []).map(ch => 
+                        ch.name === "Office" || ch.id === "cr_park_office" 
+                          ? { ...ch, address: newOffice } 
+                          : ch
+                      );
+                      setConfig({ 
+                        ...config, 
+                        contacts: { ...config.contacts, crParkOffice: newOffice },
+                        chambers: updatedChambers
+                      });
+                    }}
+                    className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-gray-400 uppercase font-mono block mb-1">Also at (Panchsheel Enclave)</label>
+                  <input
+                    type="text"
+                    value={config.contacts.panchsheelOffice || "C-81, UGF, Panchsheel Enclave, New Delhi 110017"}
+                    onChange={(e) => {
+                      const newAlso = e.target.value;
+                      const updatedChambers = (config.chambers || []).map(ch => 
+                        ch.name === "Also at" || ch.id === "panchsheel_office" || ch.id === "panchsheel" 
+                          ? { ...ch, address: newAlso } 
+                          : ch
+                      );
+                      setConfig({ 
+                        ...config, 
+                        contacts: { ...config.contacts, panchsheelOffice: newAlso },
+                        chambers: updatedChambers
+                      });
+                    }}
                     className="w-full px-3 py-2 bg-[#08090d] border border-gray-700 text-white text-xs rounded-xs outline-none focus:border-[#dbb657]"
                   />
                 </div>

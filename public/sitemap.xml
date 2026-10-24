@@ -1,54 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd
+        http://www.google.com/schemas/sitemap-image/1.1
+        http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd">
+  
+  <!-- Primary Canonical Landing & Chamber Portal -->
   <url>
     <loc>https://arunabhbanerjee.com/</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-10-24</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://arunabhbanerjee.com/" />
+    <xhtml:link rel="alternate" hreflang="hi-IN" href="https://arunabhbanerjee.com/?lang=hi" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://arunabhbanerjee.com/" />
+    <image:image>
+      <image:loc>https://arunabhbanerjee.com/assets/images/Arunabh_Banerjee.jpeg</image:loc>
+      <image:title>Advocate Arunabh Banerjee — Supreme Court &amp; High Court Advocate</image:title>
+      <image:caption>Official portrait of Advocate Arunabh Banerjee, President CPDR India Human Rights, practicing before Supreme Court &amp; High Court (All Courts &amp; Tribunals)</image:caption>
+      <image:geo_location>New Delhi, India</image:geo_location>
+    </image:image>
   </url>
-  <url>
-    <loc>https://arunabhbanerjee.com/#legacy</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://arunabhbanerjee.com/#practice</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://arunabhbanerjee.com/#matters</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://arunabhbanerjee.com/#mentorship</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://arunabhbanerjee.com/#leadership</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
+
+  <!-- Chambers & Office Locations (Saket Courts, CR Park, Panchsheel Enclave) -->
   <url>
     <loc>https://arunabhbanerjee.com/#chambers</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://arunabhbanerjee.com/#consultation</loc>
-    <lastmod>2026-10-22</lastmod>
+    <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
+
+  <!-- Client Categories & Practice Sectors -->
+  <url>
+    <loc>https://arunabhbanerjee.com/#clients</loc>
+    <lastmod>2026-10-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Legal Consultation Appointment Booking -->
+  <url>
+    <loc>https://arunabhbanerjee.com/#booking</loc>
+    <lastmod>2026-10-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+
 </urlset>

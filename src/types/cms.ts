@@ -23,6 +23,8 @@ export interface ChamberItem {
   landmark?: string;
   phone: string;
   timing: string;
+  badge?: string;
+  mapUrl?: string;
 }
 
 export interface ClientCategoryItem {
@@ -109,6 +111,8 @@ export interface SiteCMSConfig {
     directEmail?: string;
     supremeCourtChamber: string;
     saketCourtsChamber: string;
+    crParkOffice?: string;
+    panchsheelOffice?: string;
     delhiHighCourtLiaison: string;
     officeHours: string;
     emergencyListingNote: string;

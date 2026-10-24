@@ -27,12 +27,17 @@ import {
   Users,
   Download,
   Smartphone,
-  Laptop
+  Laptop,
+  MapPin,
+  Clock,
+  Navigation
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 // @ts-ignore
 import arunabhPortrait from "./assets/images/Arunabh_Banerjee.jpeg";
 import AdminPanel from "./components/AdminPanel";
+import TiltCard from "./components/TiltCard";
+import LegalCursor from "./components/LegalCursor";
 import { cmsService } from "./services/cmsService";
 import { LeadItem, SiteCMSConfig } from "./types/cms";
 
@@ -58,6 +63,7 @@ export default function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState<LeadItem | null>(null);
   const [copiedRef, setCopiedRef] = useState(false);
+  const [copiedAddressId, setCopiedAddressId] = useState<string | null>(null);
 
   // Unique IDs for form accessibility
   const nameInputId = useId();
@@ -211,6 +217,12 @@ export default function App() {
     setTimeout(() => setCopiedRef(false), 2500);
   };
 
+  const copyAddress = (id: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedAddressId(id);
+    setTimeout(() => setCopiedAddressId(null), 2500);
+  };
+
   const scrollToSection = (id: string) => {
     setMobileMenuOpen(false);
     const element = document.getElementById(id);
@@ -264,6 +276,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#07080c] text-gray-200 font-sans selection:bg-[#d4af37] selection:text-black antialiased relative">
       
+      {/* Interactive 3D Legal Lawyer Cursor & Ambient Glow Trail */}
+      <LegalCursor />
+
       {/* Ambient regal gold lighting gradient */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] bg-gradient-to-b from-[#d4af37]/8 via-transparent to-transparent pointer-events-none blur-[140px] z-0" />
 
@@ -301,6 +316,12 @@ export default function App() {
             >
               Client Categories
             </button>
+            <button
+              onClick={() => scrollToSection("chambers")}
+              className="text-xs uppercase tracking-widest text-gray-300 hover:text-[#d4af37] transition-colors focus:outline-none font-medium cursor-pointer"
+            >
+              Chamber &amp; Offices
+            </button>
 
             {/* Install App Button (PC & Mobile) */}
             <button
@@ -316,9 +337,9 @@ export default function App() {
             {/* Prominent CTA */}
             <button
               onClick={() => scrollToSection("booking")}
-              className="bg-gradient-to-r from-[#b28d2f] via-[#d4af37] to-[#b28d2f] text-black font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xs shadow-[0_0_15px_rgba(212,175,55,0.25)] hover:shadow-[0_0_22px_rgba(212,175,55,0.45)] hover:brightness-110 active:scale-[0.98] transition-all flex items-center gap-2 cursor-pointer"
+              className="shine-hover btn-3d-gold text-black font-extrabold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xs hover:brightness-110 active:translate-y-1 active:scale-[0.98] transition-all flex items-center gap-2 cursor-pointer group"
             >
-              <Calendar className="w-3.5 h-3.5" />
+              <Calendar className="w-3.5 h-3.5 text-black group-hover:scale-125 group-hover:-rotate-12 transition-transform duration-300" />
               Book Appointment
             </button>
           </nav>
@@ -373,6 +394,12 @@ export default function App() {
                 Client Categories
               </button>
               <button
+                onClick={() => scrollToSection("chambers")}
+                className="block w-full text-left text-sm uppercase tracking-wider text-gray-300 hover:text-[#d4af37] py-2.5 border-b border-gray-800"
+              >
+                Chamber &amp; Offices
+              </button>
+              <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   handleInstallApp();
@@ -411,9 +438,9 @@ export default function App() {
 
               <button
                 onClick={() => scrollToSection("booking")}
-                className="w-full bg-gradient-to-r from-[#b28d2f] via-[#d4af37] to-[#b28d2f] text-black font-bold text-xs tracking-wider uppercase py-3 rounded-xs flex items-center justify-center gap-2 mt-2"
+                className="shine-hover w-full btn-3d-gold text-black font-extrabold text-xs tracking-wider uppercase py-3 rounded-xs flex items-center justify-center gap-2 mt-2 cursor-pointer group"
               >
-                <Calendar className="w-4 h-4" />
+                <Calendar className="w-4 h-4 text-black group-hover:scale-125 group-hover:-rotate-12 transition-transform duration-300" />
                 Book Appointment
               </button>
             </motion.div>
@@ -436,7 +463,7 @@ export default function App() {
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#d4af37]/35 bg-[#121520]/80">
                   <Scale className="w-3.5 h-3.5 text-[#d4af37]" />
                   <span className="text-[11px] font-medium tracking-widest uppercase text-[#d4af37]">
-                    {config.hero?.courtLine || "Supreme Court of India & Delhi High Court"}
+                    {config.hero?.courtLine || "Supreme Court & High Court (All Courts & Tribunals)"}
                   </span>
                 </div>
 
@@ -453,11 +480,11 @@ export default function App() {
                 <span className="text-xs sm:text-sm uppercase tracking-[0.25em] text-gray-400 font-semibold block">
                   {config.hero?.tagline || "Senior Counsel"}
                 </span>
-                <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#f5d77f] via-[#d4af37] to-[#997a2e] leading-[1.1]">
-                  {config.hero?.name || "Arunabh Banerjee"}
+                <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-shimmer-3d leading-[1.1] drop-shadow-[0_4px_12px_rgba(212,175,55,0.25)]">
+                  {config.hero?.name?.startsWith("Advocate") ? config.hero.name : `Advocate ${config.hero?.name || "Arunabh Banerjee"}`}
                 </h1>
                 <p className="text-base sm:text-lg text-[#d4af37] font-serif tracking-wide pt-1">
-                  {config.hero?.roleBadge || "Supreme Court Advocate"}
+                  {config.hero?.roleBadge || "Supreme Court Advocate"} • {config.hero?.courtLine || "Supreme Court & High Court (All Courts & Tribunals)"}
                 </p>
               </div>
 
@@ -472,14 +499,15 @@ export default function App() {
                 <div className="flex items-center gap-3">
                   <div 
                     onClick={handleDirectNumberClick}
-                    className="w-9 h-9 rounded-full bg-[#141724] border border-[#d4af37]/45 flex items-center justify-center text-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.2)] shrink-0 cursor-pointer hover:border-emerald-500 hover:text-emerald-400 transition-colors"
+                    className="relative w-10 h-10 rounded-full bg-[#141724] border border-[#d4af37]/45 flex items-center justify-center text-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.25)] shrink-0 cursor-pointer hover:border-emerald-500 hover:text-emerald-400 hover:scale-110 active:scale-95 transition-all duration-300 group/icon"
                     title="Click to Message on WhatsApp / SMS"
                   >
-                    <MessageSquare className="w-4 h-4 text-emerald-400" />
+                    <span className="absolute -inset-1 rounded-full bg-emerald-500/20 animate-pulse-ring pointer-events-none" />
+                    <MessageSquare className="w-4 h-4 text-emerald-400 group-hover/icon:scale-120 group-hover/icon:rotate-12 transition-transform duration-300" />
                   </div>
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-gray-400 block font-mono">
-                      Direct Chamber Helpline & SMS
+                      Direct Chamber Helpline &amp; SMS
                     </span>
                     <a 
                       href={`https://wa.me/919810703335?text=${encodeURIComponent("Hello Advocate Arunabh Banerjee, I am contacting you for legal consultation and representation.")}`}
@@ -498,22 +526,22 @@ export default function App() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={handleDirectNumberClick}
-                        className="text-[10px] font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1 bg-emerald-950/50 border border-emerald-500/50 px-2 py-0.5 rounded-xs cursor-pointer shadow-xs"
-                        title="Chat & SMS on WhatsApp"
+                        className="btn-3d-dark text-[10px] font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 bg-emerald-950/50 border border-emerald-500/50 hover:border-emerald-400/80 px-2.5 py-1 rounded-xs cursor-pointer group/wa hover:shadow-[0_0_15px_rgba(16,185,129,0.35)]"
+                        title="Chat &amp; SMS on WhatsApp"
                       >
-                        <MessageSquare className="w-2.5 h-2.5" /> WhatsApp SMS
+                        <MessageSquare className="w-2.5 h-2.5 group-hover/wa:scale-125 transition-transform" /> WhatsApp SMS
                       </a>
                       <a
                         href={`tel:${config.contacts?.primaryMobile || "+919810703335"}`}
                         onClick={() => cmsService.trackClick("call")}
-                        className="text-[10px] font-mono text-gray-300 hover:text-[#d4af37] flex items-center gap-1 bg-gray-900/80 border border-gray-700 px-2 py-0.5 rounded-xs"
+                        className="btn-3d-dark text-[10px] font-mono text-gray-300 hover:text-[#d4af37] flex items-center gap-1.5 bg-gray-900/80 border border-gray-700 hover:border-[#d4af37]/60 px-2.5 py-1 rounded-xs group/call hover:shadow-[0_0_15px_rgba(212,175,55,0.3)]"
                         title="Direct Phone Call"
                       >
-                        <Phone className="w-2.5 h-2.5 text-[#d4af37]" /> Call
+                        <Phone className="w-2.5 h-2.5 text-[#d4af37] group-hover/call:animate-icon-wobble" /> Call
                       </a>
                       <a
                         href={`sms:+919810703335?body=${encodeURIComponent("Hello Advocate Arunabh Banerjee, I need urgent legal assistance.")}`}
-                        className="sm:hidden text-[10px] font-mono text-blue-300 hover:text-white flex items-center gap-1 bg-blue-950/40 border border-blue-500/40 px-2 py-0.5 rounded-xs"
+                        className="btn-3d-dark sm:hidden text-[10px] font-mono text-blue-300 hover:text-white flex items-center gap-1 bg-blue-950/40 border border-blue-500/40 px-2 py-0.5 rounded-xs"
                         title="Direct Mobile SMS"
                       >
                         SMS
@@ -526,10 +554,11 @@ export default function App() {
                 <div className="flex items-center gap-3 sm:border-l sm:border-gray-800/80 sm:pl-4">
                   <div 
                     onClick={handleDirectEmailClick}
-                    className="w-9 h-9 rounded-full bg-[#141724] border border-[#d4af37]/45 flex items-center justify-center text-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.2)] shrink-0 cursor-pointer hover:border-red-400 hover:text-red-400 transition-colors"
+                    className="relative w-10 h-10 rounded-full bg-[#141724] border border-[#d4af37]/45 flex items-center justify-center text-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.25)] shrink-0 cursor-pointer hover:border-red-400 hover:text-red-400 hover:scale-110 active:scale-95 transition-all duration-300 group/mail"
                     title="Click to Open Direct Gmail Compose"
                   >
-                    <Mail className="w-4 h-4 text-red-400" />
+                    <span className="absolute -inset-1 rounded-full bg-red-500/20 animate-pulse-ring pointer-events-none" />
+                    <Mail className="w-4 h-4 text-red-400 group-hover/mail:scale-120 group-hover/mail:-rotate-12 transition-transform duration-300" />
                   </div>
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-gray-400 block font-mono">
@@ -552,10 +581,10 @@ export default function App() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={handleDirectEmailClick}
-                        className="text-[10px] font-mono text-red-400 hover:text-red-300 flex items-center gap-1 bg-red-950/40 border border-red-500/40 px-2 py-0.5 rounded-xs cursor-pointer shadow-xs"
+                        className="btn-3d-dark text-[10px] font-mono text-red-400 hover:text-red-300 flex items-center gap-1.5 bg-red-950/40 border border-red-500/40 hover:border-red-400/80 px-2.5 py-1 rounded-xs cursor-pointer group/gmail hover:shadow-[0_0_15px_rgba(239,68,68,0.35)]"
                         title="Direct Gmail Compose Window"
                       >
-                        <Mail className="w-2.5 h-2.5 text-red-400" /> Direct Gmail Compose
+                        <Mail className="w-2.5 h-2.5 text-red-400 group-hover/gmail:scale-125 transition-transform" /> Direct Gmail Compose
                       </a>
                     </div>
                   </div>
@@ -568,29 +597,31 @@ export default function App() {
             <div className="lg:col-span-5 flex justify-center lg:justify-end">
               <div className="max-w-xs sm:max-w-sm w-full">
                 
-                {/* Portrait Card with Glow */}
-                <div className="relative group">
-                  {/* Double Gold Framing & Glow */}
-                  <div className="absolute -inset-1 bg-gradient-to-b from-[#d4af37]/45 via-[#b28d2f]/20 to-transparent rounded-xs blur-[2px] group-hover:from-[#d4af37]/70 transition-all duration-500 pointer-events-none" />
-                  
-                  <div className="relative border border-[#d4af37]/50 bg-[#0f121a] p-2.5 rounded-xs shadow-2xl">
+                {/* 3D Tilt Portrait Card with Multi-layer Depth */}
+                <TiltCard maxTilt={12} scale={1.03} glowColor="rgba(212, 175, 55, 0.28)" className="group">
+                  <div className="relative">
+                    {/* Double Gold Framing & Glow */}
+                    <div className="absolute -inset-1 bg-gradient-to-b from-[#d4af37]/45 via-[#b28d2f]/20 to-transparent rounded-xs blur-[2px] group-hover:from-[#d4af37]/70 transition-all duration-500 pointer-events-none" />
                     
-                    {/* Decorative Classical Corner Accents */}
-                    <div className="absolute top-1 left-1 w-3 h-3 border-t border-l border-[#d4af37] pointer-events-none" />
-                    <div className="absolute top-1 right-1 w-3 h-3 border-t border-r border-[#d4af37] pointer-events-none" />
-                    <div className="absolute bottom-1 left-1 w-3 h-3 border-b border-l border-[#d4af37] pointer-events-none" />
-                    <div className="absolute bottom-1 right-1 w-3 h-3 border-b border-r border-[#d4af37] pointer-events-none" />
+                    <div className="relative border border-[#d4af37]/50 bg-[#0f121a] p-2.5 rounded-xs shadow-2xl preserve-3d">
+                      
+                      {/* Decorative Classical Corner Accents */}
+                      <div className="absolute top-1 left-1 w-3 h-3 border-t border-l border-[#d4af37] pointer-events-none translate-z-20" />
+                      <div className="absolute top-1 right-1 w-3 h-3 border-t border-r border-[#d4af37] pointer-events-none translate-z-20" />
+                      <div className="absolute bottom-1 left-1 w-3 h-3 border-b border-l border-[#d4af37] pointer-events-none translate-z-20" />
+                      <div className="absolute bottom-1 right-1 w-3 h-3 border-b border-r border-[#d4af37] pointer-events-none translate-z-20" />
 
-                    {/* Real Portrait */}
-                    <img
-                      src={config.hero?.portraitUrl || arunabhPortrait}
-                      alt={`${config.hero?.name || "Advocate Arunabh Banerjee"}, Supreme Court of India Advocate`}
-                      className="w-full aspect-[4/5] object-cover rounded-xs filter contrast-[1.05] brightness-[0.98]"
-                      loading="eager"
-                    />
+                      {/* Real Portrait */}
+                      <img
+                        src={config.hero?.portraitUrl || arunabhPortrait}
+                        alt={`${config.hero?.name || "Advocate Arunabh Banerjee"}, Supreme Court of India Advocate`}
+                        className="w-full aspect-[4/5] object-cover rounded-xs filter contrast-[1.05] brightness-[0.98] translate-z-10"
+                        loading="eager"
+                      />
 
+                    </div>
                   </div>
-                </div>
+                </TiltCard>
 
                 {/* Action Buttons Directly Under the Image */}
                 <div className="mt-3.5 flex flex-col sm:flex-row gap-2.5 w-full relative z-20">
@@ -600,9 +631,9 @@ export default function App() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => cmsService.trackClick("whatsapp")}
-                    className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xs border border-emerald-500/60 bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 hover:text-emerald-200 text-xs uppercase tracking-wider font-semibold active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(16,185,129,0.18)] cursor-pointer"
+                    className="shine-hover flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xs border border-emerald-500/60 bg-gradient-to-r from-emerald-950/70 via-emerald-900/50 to-emerald-950/70 hover:bg-emerald-900/70 text-emerald-300 hover:text-emerald-100 text-xs uppercase tracking-wider font-semibold shadow-[0_4px_16px_rgba(16,185,129,0.22)] hover:shadow-[0_8px_25px_rgba(16,185,129,0.45)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all cursor-pointer group"
                   >
-                    <MessageSquare className="w-4 h-4 text-emerald-400" />
+                    <MessageSquare className="w-4 h-4 text-emerald-400 group-hover:scale-125 group-hover:rotate-12 transition-transform duration-300" />
                     WhatsApp
                   </a>
 
@@ -613,9 +644,9 @@ export default function App() {
                       e.preventDefault();
                       scrollToSection("booking");
                     }}
-                    className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xs bg-gradient-to-r from-[#b28d2f] via-[#d4af37] to-[#b28d2f] text-black font-bold text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer text-center"
+                    className="shine-hover flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xs btn-3d-gold text-black font-extrabold text-xs uppercase tracking-wider hover:-translate-y-0.5 active:translate-y-1 active:scale-[0.98] transition-all cursor-pointer text-center group"
                   >
-                    <Calendar className="w-4 h-4 text-black" />
+                    <Calendar className="w-4 h-4 text-black group-hover:scale-125 group-hover:-rotate-12 transition-transform duration-300" />
                     Book Appointment
                   </a>
                 </div>
@@ -682,36 +713,41 @@ export default function App() {
               const IconComp = cat.icon;
               const isLastOdd = idx === 4;
               return (
-                <div 
-                  key={cat.id} 
+                <TiltCard
+                  key={cat.id}
+                  maxTilt={14}
+                  scale={1.04}
+                  glowColor="rgba(212, 175, 55, 0.22)"
+                  className={isLastOdd ? "col-span-2 lg:col-span-1" : "col-span-1"}
                   onClick={() => {
                     setFormData(prev => ({ ...prev, clientCategory: cat.id }));
                     scrollToSection("booking");
                   }}
-                  className={`${isLastOdd ? "col-span-2 lg:col-span-1" : "col-span-1"} bg-[#10131c] border border-gray-800/90 hover:border-[#d4af37]/70 rounded-xs p-3.5 sm:p-5 flex flex-col justify-between transition-all duration-300 group hover:shadow-[0_8px_25px_rgba(212,175,55,0.12)] hover:-translate-y-1 cursor-pointer`}
                 >
-                  <div className="space-y-2 sm:space-y-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xs bg-[#171b26] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] group-hover:scale-105 group-hover:border-[#d4af37] transition-all">
-                      <IconComp className="w-4 h-4 sm:w-5 sm:h-5 text-[#d4af37]" />
+                  <div className="w-full h-full bg-[#10131c] border border-gray-800/90 hover:border-[#d4af37]/80 rounded-xs p-3.5 sm:p-5 flex flex-col justify-between transition-all duration-300 group hover:shadow-[0_16px_40px_rgba(212,175,55,0.25)] cursor-pointer preserve-3d shine-hover">
+                    <div className="space-y-2 sm:space-y-3">
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xs bg-[#171b26] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] group-hover:scale-120 group-hover:rotate-6 group-hover:bg-[#202538] group-hover:border-[#d4af37] group-hover:shadow-[0_0_20px_rgba(212,175,55,0.45)] transition-all duration-300 translate-z-20 shadow-[0_0_12px_rgba(212,175,55,0.15)]">
+                        <IconComp className="w-4 h-4 sm:w-5 sm:h-5 text-[#d4af37] group-hover:text-white transition-colors" />
+                      </div>
+                      <div className="translate-z-10">
+                        <h3 className="font-serif text-sm sm:text-lg font-bold text-white group-hover:text-[#f5d77f] transition-colors leading-snug">
+                          {cat.name}
+                        </h3>
+                        <span className="text-[9px] sm:text-[10px] text-[#d4af37] uppercase font-mono block mt-1 tracking-wide font-semibold leading-tight">
+                          {cat.subtitle}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-serif text-sm sm:text-lg font-bold text-white group-hover:text-[#f5d77f] transition-colors leading-snug">
-                        {cat.name}
-                      </h3>
-                      <span className="text-[9px] sm:text-[10px] text-[#d4af37] uppercase font-mono block mt-1 tracking-wide font-semibold leading-tight">
-                        {cat.subtitle}
-                      </span>
-                    </div>
-                  </div>
 
-                  <div className="mt-3 pt-2.5 sm:mt-4 sm:pt-3 border-t border-gray-800/80 flex items-center justify-between text-[10px] sm:text-xs text-gray-300 group-hover:text-[#d4af37] transition-colors w-full">
-                    <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-wider">
-                      <span className="sm:hidden">Consult</span>
-                      <span className="hidden sm:inline">Book Consultation</span>
-                    </span>
-                    <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 group-hover:translate-x-1 transition-transform" />
+                    <div className="mt-3 pt-2.5 sm:mt-4 sm:pt-3 border-t border-gray-800/80 flex items-center justify-between text-[10px] sm:text-xs text-gray-300 group-hover:text-[#d4af37] transition-colors w-full translate-z-10">
+                      <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-wider">
+                        <span className="sm:hidden">Consult</span>
+                        <span className="hidden sm:inline">Book Consultation</span>
+                      </span>
+                      <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 group-hover:translate-x-2 transition-transform duration-300" />
+                    </div>
                   </div>
-                </div>
+                </TiltCard>
               );
             })}
           </div>
@@ -861,19 +897,36 @@ export default function App() {
                       const IconComponent = item.icon;
                       const isSelected = formData.clientCategory === item.id;
                       return (
-                        <button
+                        <motion.button
                           key={item.id}
                           type="button"
+                          whileHover={{ scale: 1.04, y: -2 }}
+                          whileTap={{ scale: 0.95, y: 1 }}
                           onClick={() => setFormData(prev => ({ ...prev, clientCategory: item.id }))}
-                          className={`${item.id === "NRIs" ? "col-span-2 sm:col-span-1" : "col-span-1"} py-2.5 sm:py-2 px-2 text-xs font-semibold rounded-xs border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                          className={`${item.id === "NRIs" ? "col-span-2 sm:col-span-1" : "col-span-1"} py-2.5 sm:py-2.5 px-2 text-xs font-semibold rounded-xs border transition-all flex items-center justify-center gap-2 cursor-pointer preserve-3d group relative ${
                             isSelected
-                              ? "bg-gradient-to-r from-[#d4af37]/25 to-[#b28d2f]/20 border-[#d4af37] text-[#f5d77f] shadow-[0_0_12px_rgba(212,175,55,0.25)] font-bold"
-                              : "bg-[#151926] border-gray-700/80 text-gray-400 hover:text-white hover:border-gray-600"
+                              ? "bg-gradient-to-b from-[#d4af37]/35 via-[#b28d2f]/25 to-[#161a26] border-[#d4af37] text-[#f5d77f] shadow-[0_4px_16px_rgba(212,175,55,0.38),inset_0_1px_1px_rgba(255,255,255,0.4)] font-bold ring-1 ring-[#d4af37]/60 -translate-y-0.5"
+                              : "bg-[#141724] border-gray-700/80 text-gray-400 hover:text-white hover:border-[#d4af37]/50 hover:bg-[#1a1f30] hover:shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
                           }`}
                         >
-                          <IconComponent className={`w-3.5 h-3.5 ${isSelected ? "text-[#d4af37]" : "text-gray-400"}`} />
-                          <span>{item.label}</span>
-                        </button>
+                          <motion.div
+                            key={`${item.id}-${isSelected ? 'selected' : 'unselected'}`}
+                            animate={
+                              isSelected 
+                                ? { 
+                                    scale: [1, 1.45, 0.9, 1.25, 1], 
+                                    rotate: [0, -18, 18, -6, 0],
+                                    y: [0, -3, 1, -1, 0]
+                                  } 
+                                : { scale: 1, rotate: 0, y: 0 }
+                            }
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                            className="relative flex items-center justify-center"
+                          >
+                            <IconComponent className={`w-4 h-4 transition-all duration-300 ${isSelected ? "text-[#f5d77f] drop-shadow-[0_0_8px_rgba(212,175,55,0.8)]" : "text-gray-400 group-hover:text-[#d4af37] group-hover:scale-115"}`} />
+                          </motion.div>
+                          <span className="tracking-wide">{item.label}</span>
+                        </motion.button>
                       );
                     })}
                   </div>
@@ -895,7 +948,7 @@ export default function App() {
                       value={formData.name}
                       onChange={handleInputChange}
                       placeholder="e.g. Rajesh Sharma"
-                      className="w-full bg-[#151926] border border-gray-700/80 focus:border-[#d4af37] rounded-xs px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none transition-colors"
+                      className="w-full bg-[#151926] border border-gray-700/80 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/40 focus:shadow-[0_0_18px_rgba(212,175,55,0.2)] focus:-translate-y-0.5 rounded-xs px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none transition-all duration-200"
                     />
                   </div>
 
@@ -912,7 +965,7 @@ export default function App() {
                       value={formData.phone}
                       onChange={handleInputChange}
                       placeholder="e.g. +91 98123 45678"
-                      className="w-full bg-[#151926] border border-gray-700/80 focus:border-[#d4af37] rounded-xs px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none transition-colors"
+                      className="w-full bg-[#151926] border border-gray-700/80 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/40 focus:shadow-[0_0_18px_rgba(212,175,55,0.2)] focus:-translate-y-0.5 rounded-xs px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none transition-all duration-200"
                     />
                   </div>
 
@@ -934,7 +987,7 @@ export default function App() {
                       value={formData.caseSubject}
                       onChange={handleInputChange}
                       placeholder="e.g. Bail Application, Matrimonial, Cheque Bounce, Supreme Court SLP..."
-                      className="w-full bg-[#151926] border border-gray-700/80 focus:border-[#d4af37] rounded-xs px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none transition-colors"
+                      className="w-full bg-[#151926] border border-gray-700/80 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/40 focus:shadow-[0_0_18px_rgba(212,175,55,0.2)] focus:-translate-y-0.5 rounded-xs px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none transition-all duration-200"
                     />
                   </div>
 
@@ -951,7 +1004,7 @@ export default function App() {
                       min={todayISO}
                       value={formData.date}
                       onChange={handleInputChange}
-                      className="w-full bg-[#151926] border border-gray-700/80 focus:border-[#d4af37] rounded-xs px-4 py-2.5 text-sm text-white focus:outline-none transition-colors font-mono"
+                      className="w-full bg-[#151926] border border-gray-700/80 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/40 focus:shadow-[0_0_18px_rgba(212,175,55,0.2)] focus:-translate-y-0.5 rounded-xs px-4 py-2.5 text-sm text-white focus:outline-none transition-all duration-200 font-mono"
                     />
                   </div>
 
@@ -969,7 +1022,7 @@ export default function App() {
                     value={formData.description}
                     onChange={handleInputChange}
                     placeholder="Briefly state jurisdiction court, matter background, or upcoming hearing date..."
-                    className="w-full bg-[#151926] border border-gray-700/80 focus:border-[#d4af37] rounded-xs px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none transition-colors resize-none"
+                    className="w-full bg-[#151926] border border-gray-700/80 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/40 focus:shadow-[0_0_18px_rgba(212,175,55,0.2)] focus:-translate-y-0.5 rounded-xs px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none transition-all duration-200 resize-none"
                   />
                 </div>
 
@@ -978,7 +1031,7 @@ export default function App() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-gradient-to-r from-[#b28d2f] via-[#d4af37] to-[#b28d2f] text-black font-bold text-xs uppercase tracking-widest py-3.5 rounded-xs shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_30px_rgba(212,175,55,0.45)] hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                    className="shine-hover w-full btn-3d-gold text-black font-extrabold text-xs uppercase tracking-widest py-3.5 rounded-xs hover:brightness-110 active:translate-y-1 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer group"
                   >
                     {isSubmitting ? (
                       <>
@@ -987,7 +1040,7 @@ export default function App() {
                       </>
                     ) : (
                       <>
-                        <Send className="w-4 h-4 text-black" />
+                        <Send className="w-4 h-4 text-black group-hover:translate-x-2 group-hover:-translate-y-1 group-hover:scale-115 transition-transform duration-300" />
                         Confirm Consultation Booking
                       </>
                     )}
@@ -1012,68 +1065,338 @@ export default function App() {
         <div className="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 text-center">
           
           {/* Metric 1: Chamber Team Strength */}
-          <div className="p-3.5 sm:p-4 rounded-xs bg-[#10131c]/70 border border-gray-800/80 hover:border-[#d4af37]/40 transition-colors flex flex-col items-center justify-center">
-            <div className="flex items-center gap-2 text-[#dbb657] mb-1">
-              <Users className="w-5 h-5 text-[#dbb657]" />
-              <span className="font-serif text-2xl sm:text-3xl font-bold">12</span>
+          <TiltCard maxTilt={10} scale={1.03} glowColor="rgba(212, 175, 55, 0.2)">
+            <div className="w-full h-full p-3.5 sm:p-4 rounded-xs bg-[#10131c]/80 border border-gray-800/80 hover:border-[#d4af37]/60 transition-colors flex flex-col items-center justify-center preserve-3d">
+              <div className="flex items-center gap-2 text-[#dbb657] mb-1 translate-z-15">
+                <Users className="w-5 h-5 text-[#dbb657]" />
+                <span className="font-serif text-2xl sm:text-3xl font-bold">12</span>
+              </div>
+              <span className="text-xs font-semibold text-white tracking-wide translate-z-10">Advocates Team</span>
+              <span className="text-[10px] text-gray-400 font-mono mt-0.5">Led by Advocate Arunabh Banerjee</span>
             </div>
-            <span className="text-xs font-semibold text-white tracking-wide">Advocates Team</span>
-            <span className="text-[10px] text-gray-400 font-mono mt-0.5">Led by Advocate Arunabh Banerjee</span>
-          </div>
+          </TiltCard>
 
           {/* Metric 2: Judicial Jurisdictions */}
-          <div className="p-3.5 sm:p-4 rounded-xs bg-[#10131c]/70 border border-gray-800/80 hover:border-[#d4af37]/40 transition-colors flex flex-col items-center justify-center">
-            <div className="flex items-center gap-2 text-[#dbb657] mb-1">
-              <Scale className="w-5 h-5 text-[#dbb657]" />
-              <span className="font-serif text-base sm:text-lg font-bold">Supreme Court</span>
+          <TiltCard maxTilt={10} scale={1.03} glowColor="rgba(212, 175, 55, 0.2)">
+            <div className="w-full h-full p-3.5 sm:p-4 rounded-xs bg-[#10131c]/80 border border-gray-800/80 hover:border-[#d4af37]/60 transition-colors flex flex-col items-center justify-center preserve-3d">
+              <div className="flex items-center gap-2 text-[#dbb657] mb-1 translate-z-15">
+                <Scale className="w-5 h-5 text-[#dbb657]" />
+                <span className="font-serif text-sm sm:text-base font-bold leading-tight">Supreme Court &amp; High Court</span>
+              </div>
+              <span className="text-xs font-semibold text-white tracking-wide translate-z-10">All Courts &amp; Tribunals</span>
+              <span className="text-[10px] text-gray-400 font-mono mt-0.5">Appellate &amp; Trial Jurisdictions</span>
             </div>
-            <span className="text-xs font-semibold text-white tracking-wide">& Delhi High Court</span>
-            <span className="text-[10px] text-gray-400 font-mono mt-0.5">Appellate & Trial Litigation</span>
-          </div>
+          </TiltCard>
 
           {/* Metric 3: Client Representation Sectors */}
-          <div className="p-3.5 sm:p-4 rounded-xs bg-[#10131c]/70 border border-gray-800/80 hover:border-[#d4af37]/40 transition-colors flex flex-col items-center justify-center">
-            <div className="flex items-center gap-2 text-[#dbb657] mb-1">
-              <Shield className="w-5 h-5 text-[#dbb657]" />
-              <span className="font-serif text-2xl sm:text-3xl font-bold">5</span>
+          <TiltCard maxTilt={10} scale={1.03} glowColor="rgba(212, 175, 55, 0.2)">
+            <div className="w-full h-full p-3.5 sm:p-4 rounded-xs bg-[#10131c]/80 border border-gray-800/80 hover:border-[#d4af37]/60 transition-colors flex flex-col items-center justify-center preserve-3d">
+              <div className="flex items-center gap-2 text-[#dbb657] mb-1 translate-z-15">
+                <Shield className="w-5 h-5 text-[#dbb657]" />
+                <span className="font-serif text-2xl sm:text-3xl font-bold">5</span>
+              </div>
+              <span className="text-xs font-semibold text-white tracking-wide translate-z-10">Client Sectors</span>
+              <span className="text-[10px] text-gray-400 font-mono mt-0.5">Individuals, Corporate, NGOs, Trusts &amp; NRIs</span>
             </div>
-            <span className="text-xs font-semibold text-white tracking-wide">Client Sectors</span>
-            <span className="text-[10px] text-gray-400 font-mono mt-0.5">Individuals, Corporate, NGOs, Trusts & NRIs</span>
-          </div>
+          </TiltCard>
 
           {/* Metric 4: Direct Legal Helpline Access */}
-          <div className="p-3.5 sm:p-4 rounded-xs bg-[#10131c]/70 border border-gray-800/80 hover:border-[#d4af37]/40 transition-colors flex flex-col items-center justify-center">
-            <div className="flex items-center gap-2 text-emerald-400 mb-1">
-              <MessageSquare className="w-5 h-5 text-emerald-400" />
-              <span className="font-serif text-base sm:text-lg font-bold">Direct Helpline</span>
+          <TiltCard maxTilt={10} scale={1.03} glowColor="rgba(16, 185, 129, 0.2)">
+            <div className="w-full h-full p-3.5 sm:p-4 rounded-xs bg-[#10131c]/80 border border-gray-800/80 hover:border-emerald-500/60 transition-colors flex flex-col items-center justify-center preserve-3d">
+              <div className="flex items-center gap-2 text-emerald-400 mb-1 translate-z-15">
+                <MessageSquare className="w-5 h-5 text-emerald-400" />
+                <span className="font-serif text-base sm:text-lg font-bold">Direct Helpline</span>
+              </div>
+              <span className="text-xs font-semibold text-white tracking-wide translate-z-10">Instant Consultation</span>
+              <a 
+                href={`https://wa.me/919810703335?text=${encodeURIComponent("Hello Advocate Arunabh Banerjee, I am contacting you for legal consultation and representation.")}`}
+                onClick={handleDirectNumberClick}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] text-emerald-400 hover:text-emerald-300 font-mono mt-0.5 cursor-pointer underline underline-offset-2"
+                title="Chat with Chamber on WhatsApp"
+              >
+                +91 98107 03335 (WhatsApp &amp; Call)
+              </a>
             </div>
-            <span className="text-xs font-semibold text-white tracking-wide">Instant Consultation</span>
-            <a 
-              href={`https://wa.me/919810703335?text=${encodeURIComponent("Hello Advocate Arunabh Banerjee, I am contacting you for legal consultation and representation.")}`}
-              onClick={handleDirectNumberClick}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[10px] text-emerald-400 hover:text-emerald-300 font-mono mt-0.5 cursor-pointer underline underline-offset-2"
-              title="Chat with Chamber on WhatsApp"
-            >
-              +91 98107 03335 (WhatsApp & Call)
-            </a>
-          </div>
+          </TiltCard>
 
         </div>
       </section>
 
       {/* =========================================================================
+          CHAMBER & OFFICE DIRECTORY (Saket Courts, CR Park, Panchsheel Enclave)
+      ========================================================================= */}
+      <section id="chambers" className="py-14 md:py-18 border-b border-[#d4af37]/20 relative bg-[#07090e]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          
+          {/* Section Heading */}
+          <div className="text-center space-y-2 mb-10">
+            <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-[#d4af37] font-semibold inline-flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5 text-[#d4af37]" />
+              Official Locations
+            </span>
+            <h2 className="font-serif text-2xl sm:text-4xl font-medium text-white tracking-tight">
+              Chamber &amp; Office Addresses
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-400 max-w-xl mx-auto">
+              Supreme Court &amp; High Court practice chambers, primary legal office, and executive consultation suites across New Delhi.
+            </p>
+          </div>
+
+          {/* Locations Grid: 3 Distinct Locations */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            
+            {/* 1. Chamber: Saket Courts Complex */}
+            <TiltCard maxTilt={12} scale={1.03} glowColor="rgba(212, 175, 55, 0.25)">
+              <div className="w-full h-full bg-[#10131c] border border-[#d4af37]/40 hover:border-[#d4af37] rounded-xs p-5 sm:p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_16px_40px_rgba(212,175,55,0.25)] group preserve-3d shine-hover">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between translate-z-20">
+                    <div className="w-10 h-10 rounded-xs bg-[#171b26] border border-[#d4af37]/50 flex items-center justify-center text-[#d4af37] group-hover:scale-120 group-hover:rotate-6 group-hover:bg-[#202538] group-hover:border-[#d4af37] group-hover:shadow-[0_0_20px_rgba(212,175,55,0.45)] transition-all duration-300 shadow-[0_0_12px_rgba(212,175,55,0.18)]">
+                      <Scale className="w-5 h-5 text-[#d4af37] group-hover:text-white transition-colors" />
+                    </div>
+                    <span className="px-2.5 py-1 text-[10px] font-mono font-bold tracking-wider uppercase bg-[#d4af37]/15 text-[#f5d77f] border border-[#d4af37]/40 rounded-xs shadow-xs">
+                      CHAMBER
+                    </span>
+                  </div>
+
+                  <div className="translate-z-10">
+                    <h3 className="font-serif text-lg font-bold text-white group-hover:text-[#f5d77f] transition-colors leading-snug">
+                      Saket Courts Complex
+                    </h3>
+                    <span className="text-[11px] text-[#d4af37] font-mono block mt-0.5 font-medium">
+                      Judicial Court Chamber
+                    </span>
+                  </div>
+
+                  <div className="space-y-2.5 text-xs text-gray-300 border-t border-gray-800/80 pt-3 translate-z-10">
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-4 h-4 text-[#d4af37] shrink-0 mt-0.5" />
+                      <p className="leading-relaxed font-sans text-gray-200">
+                        {config.contacts?.saketCourtsChamber && !config.contacts.saketCourtsChamber.startsWith("Chamber 632")
+                          ? config.contacts.saketCourtsChamber 
+                          : "632, Lawyer's Block, Saket Courts Complex, New Delhi 110017"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px] text-gray-400 font-mono">
+                      <Clock className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                      <span>10:00 AM — 05:00 PM (Court Working Days)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-5 pt-3 border-t border-gray-800/80 flex items-center gap-2 translate-z-10">
+                  <button
+                    type="button"
+                    onClick={() => copyAddress("saket", "632, Lawyer's Block, Saket Courts Complex, New Delhi 110017")}
+                    className="btn-3d-dark flex-1 py-2 px-2.5 bg-[#151926] hover:bg-[#1c2233] border border-gray-700/80 hover:border-[#d4af37]/70 text-gray-300 hover:text-white rounded-xs text-[11px] font-mono flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    title="Copy Chamber Address"
+                  >
+                    {copiedAddressId === "saket" ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-emerald-400 font-bold">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-gray-400" />
+                        <span>Copy Address</span>
+                      </>
+                    )}
+                  </button>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("632, Lawyer's Block, Saket Courts Complex, New Delhi 110017")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => cmsService.trackClick("maps")}
+                    className="btn-3d-dark py-2 px-3 bg-[#151926] hover:bg-[#1c2233] border border-gray-700/80 hover:border-[#d4af37] text-[#d4af37] rounded-xs text-[11px] font-mono flex items-center gap-1 transition-all cursor-pointer hover:shadow-[0_0_15px_rgba(212,175,55,0.3)]"
+                    title="View on Google Maps"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Maps</span>
+                  </a>
+                </div>
+              </div>
+            </TiltCard>
+
+            {/* 2. Office: CR Park */}
+            <TiltCard maxTilt={12} scale={1.03} glowColor="rgba(16, 185, 129, 0.25)">
+              <div className="w-full h-full bg-[#10131c] border border-emerald-500/40 hover:border-emerald-500/80 rounded-xs p-5 sm:p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_16px_40px_rgba(16,185,129,0.25)] group preserve-3d shine-hover">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between translate-z-20">
+                    <div className="w-10 h-10 rounded-xs bg-[#171b26] border border-emerald-500/50 flex items-center justify-center text-emerald-400 group-hover:scale-120 group-hover:rotate-6 group-hover:bg-[#1b262a] group-hover:border-emerald-400 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.45)] transition-all duration-300 shadow-[0_0_12px_rgba(16,185,129,0.18)]">
+                      <Building2 className="w-5 h-5 text-emerald-400 group-hover:text-white transition-colors" />
+                    </div>
+                    <span className="px-2.5 py-1 text-[10px] font-mono font-bold tracking-wider uppercase bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 rounded-xs shadow-xs">
+                      OFFICE
+                    </span>
+                  </div>
+
+                  <div className="translate-z-10">
+                    <h3 className="font-serif text-lg font-bold text-white group-hover:text-emerald-300 transition-colors leading-snug">
+                      CR Park (Chittaranjan Park)
+                    </h3>
+                    <span className="text-[11px] text-emerald-400 font-mono block mt-0.5 font-medium">
+                      Primary Office &amp; Consultation Suite
+                    </span>
+                  </div>
+
+                  <div className="space-y-2.5 text-xs text-gray-300 border-t border-gray-800/80 pt-3 translate-z-10">
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <p className="leading-relaxed font-sans text-gray-200">
+                        {config.contacts?.crParkOffice || "M-18, Ground Floor, CR Park, New Delhi - 110019"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px] text-gray-400 font-mono">
+                      <Clock className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                      <span>10:00 AM — 08:30 PM (Monday – Saturday)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-5 pt-3 border-t border-gray-800/80 flex items-center gap-2 translate-z-10">
+                  <button
+                    type="button"
+                    onClick={() => copyAddress("crpark", config.contacts?.crParkOffice || "M-18, Ground Floor, CR Park, New Delhi - 110019")}
+                    className="btn-3d-dark flex-1 py-2 px-2.5 bg-[#151926] hover:bg-[#1c2233] border border-gray-700/80 hover:border-emerald-500/70 text-gray-300 hover:text-white rounded-xs text-[11px] font-mono flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    title="Copy Office Address"
+                  >
+                    {copiedAddressId === "crpark" ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-emerald-400 font-bold">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-gray-400" />
+                        <span>Copy Address</span>
+                      </>
+                    )}
+                  </button>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(config.contacts?.crParkOffice || "M-18, Ground Floor, CR Park, New Delhi - 110019")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => cmsService.trackClick("maps")}
+                    className="btn-3d-dark py-2 px-3 bg-[#151926] hover:bg-[#1c2233] border border-gray-700/80 hover:border-emerald-400 text-emerald-400 rounded-xs text-[11px] font-mono flex items-center gap-1 transition-all cursor-pointer hover:shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                    title="View on Google Maps"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Maps</span>
+                  </a>
+                </div>
+              </div>
+            </TiltCard>
+
+            {/* 3. Also at: Panchsheel Enclave */}
+            <TiltCard maxTilt={12} scale={1.03} glowColor="rgba(59, 130, 246, 0.25)">
+              <div className="w-full h-full bg-[#10131c] border border-blue-500/40 hover:border-blue-500/80 rounded-xs p-5 sm:p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_16px_40px_rgba(59,130,246,0.25)] group preserve-3d shine-hover">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between translate-z-20">
+                    <div className="w-10 h-10 rounded-xs bg-[#171b26] border border-blue-500/50 flex items-center justify-center text-blue-400 group-hover:scale-120 group-hover:rotate-6 group-hover:bg-[#1c2538] group-hover:border-blue-400 group-hover:shadow-[0_0_20px_rgba(59,130,246,0.45)] transition-all duration-300 shadow-[0_0_12px_rgba(59,130,246,0.18)]">
+                      <Navigation className="w-5 h-5 text-blue-400 group-hover:text-white transition-colors" />
+                    </div>
+                    <span className="px-2.5 py-1 text-[10px] font-mono font-bold tracking-wider uppercase bg-blue-950/60 text-blue-300 border border-blue-500/40 rounded-xs shadow-xs">
+                      ALSO AT
+                    </span>
+                  </div>
+
+                  <div className="translate-z-10">
+                    <h3 className="font-serif text-lg font-bold text-white group-hover:text-blue-300 transition-colors leading-snug">
+                      Panchsheel Enclave
+                    </h3>
+                    <span className="text-[11px] text-blue-400 font-mono block mt-0.5 font-medium">
+                      Additional Office &amp; Advisory Suite
+                    </span>
+                  </div>
+
+                  <div className="space-y-2.5 text-xs text-gray-300 border-t border-gray-800/80 pt-3 translate-z-10">
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                      <p className="leading-relaxed font-sans text-gray-200">
+                        {config.contacts?.panchsheelOffice || "C-81, UGF, Panchsheel Enclave, New Delhi 110017"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px] text-gray-400 font-mono">
+                      <Clock className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                      <span>By Prior Consultation Appointment</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-5 pt-3 border-t border-gray-800/80 flex items-center gap-2 translate-z-10">
+                  <button
+                    type="button"
+                    onClick={() => copyAddress("panchsheel", config.contacts?.panchsheelOffice || "C-81, UGF, Panchsheel Enclave, New Delhi 110017")}
+                    className="btn-3d-dark flex-1 py-2 px-2.5 bg-[#151926] hover:bg-[#1c2233] border border-gray-700/80 hover:border-blue-500/70 text-gray-300 hover:text-white rounded-xs text-[11px] font-mono flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    title="Copy Panchsheel Enclave Address"
+                  >
+                    {copiedAddressId === "panchsheel" ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-emerald-400 font-bold">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-gray-400" />
+                        <span>Copy Address</span>
+                      </>
+                    )}
+                  </button>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(config.contacts?.panchsheelOffice || "C-81, UGF, Panchsheel Enclave, New Delhi 110017")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => cmsService.trackClick("maps")}
+                    className="btn-3d-dark py-2 px-3 bg-[#151926] hover:bg-[#1c2233] border border-gray-700/80 hover:border-blue-400 text-blue-400 rounded-xs text-[11px] font-mono flex items-center gap-1 transition-all cursor-pointer hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                    title="View on Google Maps"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Maps</span>
+                  </a>
+                </div>
+              </div>
+            </TiltCard>
+
+          </div>
+
+        </div>
+      </section>
+
+
+
+      {/* =========================================================================
           4. MINIMAL FOOTER
       ========================================================================= */}
-      <footer className="py-6 bg-[#040508] border-t border-gray-800/80 text-gray-400 text-xs">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <footer className="py-8 bg-[#040508] border-t border-gray-800/80 text-gray-400 text-xs">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
+          
+          {/* Chamber & Office Locations Quick Reference in Footer */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pb-2 border-b border-gray-800/70 text-left font-mono text-[11px]">
+            <div className="p-3 bg-[#0a0d15] border border-gray-800/80 rounded-xs space-y-1">
+              <span className="text-[#d4af37] font-bold block uppercase text-[10px] tracking-wider">⚖️ Chamber:</span>
+              <p className="text-gray-300 font-sans text-xs">632, Lawyer's Block, Saket Courts Complex, New Delhi 110017</p>
+            </div>
+            <div className="p-3 bg-[#0a0d15] border border-gray-800/80 rounded-xs space-y-1">
+              <span className="text-emerald-400 font-bold block uppercase text-[10px] tracking-wider">🏢 Office:</span>
+              <p className="text-gray-300 font-sans text-xs">M-18, Ground Floor, CR Park, New Delhi - 110019</p>
+            </div>
+            <div className="p-3 bg-[#0a0d15] border border-gray-800/80 rounded-xs space-y-1">
+              <span className="text-blue-400 font-bold block uppercase text-[10px] tracking-wider">📍 Also at:</span>
+              <p className="text-gray-300 font-sans text-xs">C-81, UGF, Panchsheel Enclave, New Delhi 110017</p>
+            </div>
+          </div>
+
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
             
             {/* Branding & Short Copyright */}
             <div className="space-y-0.5">
               <p className="font-serif text-xs font-semibold text-white tracking-wide">
-                Advocate Arunabh Banerjee • Supreme Court Advocate
+                Advocate Arunabh Banerjee • Supreme Court &amp; High Court (All Courts &amp; Tribunals)
               </p>
               <div className="flex items-center flex-wrap gap-2 text-[10px] text-gray-400 font-mono">
                 <span>© 2026 All Rights Reserved</span>

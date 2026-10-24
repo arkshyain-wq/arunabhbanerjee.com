@@ -23,7 +23,7 @@ import {
 } from "firebase/firestore";
 import { getAnalytics, isSupported, Analytics } from "firebase/analytics";
 
-const CMS_STORAGE_KEY = "arunabh_cms_config_v1";
+const CMS_STORAGE_KEY = "arunabh_cms_config_v2";
 const LEADS_STORAGE_KEY = "arunabh_leads_v1";
 const DELETED_LEADS_KEY = "arunabh_deleted_leads_v1";
 const VISITOR_STORAGE_KEY = "arunabh_visitor_stats_v1";
@@ -31,9 +31,9 @@ const VISITOR_SESSION_KEY = "arunabh_visited_session";
 
 export const DEFAULT_CMS_CONFIG: SiteCMSConfig = {
   seo: {
-    siteTitle: "Advocate Arunabh Banerjee | Supreme Court of India & Delhi High Court Advocate",
-    metaDescription: "Official Chamber Portal of Advocate Arunabh Banerjee — Supreme Court of India & Delhi High Court Advocate, President of CPDR India Human Rights. Specialist in Criminal Defense, Anticipatory & Regular Bail Jurisprudence, POCSO Act, Matrimonial Disputes, Corporate Litigation & Constitutional Special Leave Petitions.",
-    keywords: "Advocate Arunabh Banerjee, Arunabh Banerjee Supreme Court, Supreme Court Advocate Delhi, Delhi High Court Lawyer, Criminal Defense Lawyer Delhi, Bail Specialist Supreme Court, POCSO Defense Lawyer Delhi, CPDR India President, Matrimonial Lawyer Delhi High Court, Saket Court Advocate Arunabh Banerjee, arunabhbanerjee.com",
+    siteTitle: "Advocate Arunabh Banerjee | Supreme Court & High Court (All Courts & Tribunals)",
+    metaDescription: "Official Chamber Portal of Advocate Arunabh Banerjee — Supreme Court & High Court (All Courts & Tribunals), President of CPDR India Human Rights. Specialist in Criminal Defense, Anticipatory & Regular Bail Jurisprudence, POCSO Act, Matrimonial Disputes, Corporate Litigation & Constitutional Special Leave Petitions. Chamber: 632, Lawyer's Block, Saket Courts Complex, New Delhi 110017 | Office: M-18, Ground Floor, CR Park, New Delhi - 110019 | Also at: C-81, UGF, Panchsheel Enclave, New Delhi 110017.",
+    keywords: "Advocate Arunabh Banerjee, Arunabh Banerjee Supreme Court, Supreme Court & High Court, All Courts & Tribunals, Saket Courts Complex Chamber, CR Park Office, Panchsheel Enclave, Criminal Defense Lawyer Delhi, Bail Specialist Supreme Court, POCSO Defense Lawyer Delhi, CPDR India President, Matrimonial Lawyer Delhi High Court, Saket Court Advocate Arunabh Banerjee, arunabhbanerjee.com",
     canonicalDomain: "https://arunabhbanerjee.com",
     ogImage: "https://arunabhbanerjee.com/assets/images/Arunabh_Banerjee.jpeg",
     author: "Advocate Arunabh Banerjee"
@@ -52,8 +52,10 @@ export const DEFAULT_CMS_CONFIG: SiteCMSConfig = {
     whatsappMessage: "Hello Advocate Arunabh Banerjee, I am reaching out through your official chamber portal (arunabhbanerjee.com) for legal counsel and representation.",
     chamberEmail: "chamber.arunabh.banerjee@gmail.com",
     directEmail: "prof.abanerjee@gmail.com",
-    supremeCourtChamber: "Chamber No. 25, Old Lawyers Block, Supreme Court of India, New Delhi – 110001",
-    saketCourtsChamber: "Chamber 632, Lawyers Block, Saket Courts Complex, New Delhi – 110017",
+    saketCourtsChamber: "632, Lawyer's Block, Saket Courts Complex, New Delhi 110017",
+    crParkOffice: "M-18, Ground Floor, CR Park, New Delhi - 110019",
+    panchsheelOffice: "C-81, UGF, Panchsheel Enclave, New Delhi 110017",
+    supremeCourtChamber: "632, Lawyer's Block, Saket Courts Complex, New Delhi 110017",
     delhiHighCourtLiaison: "Delhi High Court Bar Association Chambers, Sher Shah Road, New Delhi – 110003",
     officeHours: "10:00 AM — 08:30 PM (Monday – Saturday)",
     emergencyListingNote: "24/7 Emergency listing advisory available on Sundays and judicial recess.",
@@ -72,7 +74,7 @@ export const DEFAULT_CMS_CONFIG: SiteCMSConfig = {
     name: "Arunabh Banerjee",
     roleBadge: "Supreme Court Advocate",
     secondaryBadge: "Senior Counsel",
-    courtLine: "Supreme Court of India & Delhi High Court",
+    courtLine: "Supreme Court & High Court (All Courts & Tribunals)",
     humanRightsLine: "President – C.P.D.R India Human Rights, Delhi",
     teamBadge: "Leading a Chamber Team of 12 Advocates",
     bioText: "Legal consultation and representation across criminal, matrimonial, commercial, constitutional, and human rights matters.",
@@ -110,7 +112,7 @@ export const DEFAULT_CMS_CONFIG: SiteCMSConfig = {
     {
       id: "constitutional",
       title: "Constitutional & Appellate Advocacy",
-      description: "Filing and arguing Special Leave Petitions (SLPs) and Writ Petitions under Article 32 & 226 before the Supreme Court and Delhi High Court."
+      description: "Filing and arguing Special Leave Petitions (SLPs) and Writ Petitions under Article 32 & 226 before the Supreme Court and High Courts."
     },
     {
       id: "ni_act",
@@ -156,27 +158,34 @@ export const DEFAULT_CMS_CONFIG: SiteCMSConfig = {
   ],
   chambers: [
     {
-      id: "supreme",
-      name: "Supreme Court of India Chamber",
-      address: "Chamber No. 25, Old Lawyers Block, Supreme Court of India, New Delhi – 110001",
-      landmark: "Adjacent to Supreme Court Gate No. 2",
+      id: "saket_chamber",
+      name: "Chamber",
+      badge: "COURT CHAMBER",
+      address: "632, Lawyer's Block, Saket Courts Complex, New Delhi 110017",
+      landmark: "Lawyer's Block, Saket Courts Complex",
       phone: "+91 98107 03335",
-      timing: "10:00 AM – 05:00 PM (Court Working Days)"
+      timing: "10:00 AM – 05:00 PM (Court Working Days)",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=Saket+Courts+Complex+New+Delhi+110017"
     },
     {
-      id: "saket",
-      name: "Saket District Courts Complex Chamber",
-      address: "Chamber 632, Lawyers Block, Saket Courts Complex, New Delhi – 110017",
-      landmark: "Opposite Court Room 6, Lawyers Wing",
+      id: "cr_park_office",
+      name: "Office",
+      badge: "MAIN OFFICE",
+      address: "M-18, Ground Floor, CR Park, New Delhi - 110019",
+      landmark: "M-Block, Chittaranjan Park",
       phone: "+91 98107 03335",
-      timing: "02:00 PM – 07:30 PM (Monday – Saturday)"
+      timing: "10:00 AM – 08:30 PM (Monday – Saturday)",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=M-18+CR+Park+New+Delhi+110019"
     },
     {
-      id: "high_court",
-      name: "Delhi High Court Bar Chambers",
-      address: "Bar Association Block, Delhi High Court, Sher Shah Road, New Delhi – 110003",
+      id: "panchsheel_office",
+      name: "Also at",
+      badge: "ADDITIONAL OFFICE",
+      address: "C-81, UGF, Panchsheel Enclave, New Delhi 110017",
+      landmark: "Upper Ground Floor, Panchsheel Enclave",
       phone: "+91 98107 03335",
-      timing: "10:30 AM – 04:30 PM"
+      timing: "By Prior Advisory Appointment",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=C-81+Panchsheel+Enclave+New+Delhi+110017"
     }
   ],
   clientCategories: [
@@ -345,12 +354,29 @@ class CMSService {
             ? { ...DEFAULT_CMS_CONFIG.firebase, ...parsed.firebase, enabled: true }
             : DEFAULT_CMS_CONFIG.firebase
         };
-        const cleaned = this.sanitizeProhibitedTerms(merged);
-        if (stored.toLowerCase().includes("sovereign") || stored.toLowerCase().includes("professor")) {
-          try {
-            localStorage.setItem(CMS_STORAGE_KEY, JSON.stringify(cleaned));
-          } catch (e) {}
+        // Auto-migrate legacy stored config to reflect updated Court Coverage and Chamber/Office addresses
+        if (
+          !parsed.contacts?.crParkOffice ||
+          parsed.hero?.courtLine === "Supreme Court of India & Delhi High Court" ||
+          !parsed.chambers?.some((c: any) => c.name === "Office" || c.address?.includes("CR Park"))
+        ) {
+          merged.hero.courtLine = DEFAULT_CMS_CONFIG.hero.courtLine;
+          merged.contacts.saketCourtsChamber = DEFAULT_CMS_CONFIG.contacts.saketCourtsChamber;
+          merged.contacts.crParkOffice = DEFAULT_CMS_CONFIG.contacts.crParkOffice;
+          merged.contacts.panchsheelOffice = DEFAULT_CMS_CONFIG.contacts.panchsheelOffice;
+          merged.chambers = DEFAULT_CMS_CONFIG.chambers;
+          merged.seo.siteTitle = DEFAULT_CMS_CONFIG.seo.siteTitle;
+          merged.seo.metaDescription = DEFAULT_CMS_CONFIG.seo.metaDescription;
         }
+
+        if (!merged.contacts.saketCourtsChamber || merged.contacts.saketCourtsChamber.startsWith("Chamber 632")) {
+          merged.contacts.saketCourtsChamber = "632, Lawyer's Block, Saket Courts Complex, New Delhi 110017";
+        }
+
+        const cleaned = this.sanitizeProhibitedTerms(merged);
+        try {
+          localStorage.setItem(CMS_STORAGE_KEY, JSON.stringify(cleaned));
+        } catch (e) {}
         return cleaned;
       }
     } catch (e) {
@@ -995,15 +1021,37 @@ class CMSService {
         const remoteData = snap.data() as Partial<SiteCMSConfig>;
         if (remoteData) {
           const currentFirebase = this.config.firebase;
-          this.config = this.sanitizeProhibitedTerms({
+          const merged: SiteCMSConfig = {
             ...this.config,
             ...remoteData,
+            contacts: {
+              ...this.config.contacts,
+              ...(remoteData.contacts || {}),
+              saketCourtsChamber: "632, Lawyer's Block, Saket Courts Complex, New Delhi 110017",
+              crParkOffice: remoteData.contacts?.crParkOffice || "M-18, Ground Floor, CR Park, New Delhi - 110019",
+              panchsheelOffice: remoteData.contacts?.panchsheelOffice || "C-81, UGF, Panchsheel Enclave, New Delhi 110017"
+            },
+            hero: {
+              ...this.config.hero,
+              ...(remoteData.hero || {}),
+              courtLine: (!remoteData.hero?.courtLine || remoteData.hero.courtLine.includes("Delhi High Court"))
+                ? "Supreme Court & High Court (All Courts & Tribunals)"
+                : remoteData.hero.courtLine
+            },
+            chambers: DEFAULT_CMS_CONFIG.chambers,
             firebase: {
               ...currentFirebase,
               ...(remoteData.firebase || {}),
               enabled: true
             }
-          });
+          };
+
+          const needsRemoteUpdate = 
+            remoteData.contacts?.saketCourtsChamber !== "632, Lawyer's Block, Saket Courts Complex, New Delhi 110017" ||
+            !remoteData.contacts?.crParkOffice ||
+            !remoteData.contacts?.panchsheelOffice;
+
+          this.config = this.sanitizeProhibitedTerms(merged);
           if (typeof window !== "undefined") {
             try {
               localStorage.setItem(CMS_STORAGE_KEY, JSON.stringify(this.config));
@@ -1012,6 +1060,10 @@ class CMSService {
           this.applyTheme(this.config.theme);
           this.applySEO(this.config.seo);
           this.notifyConfigSubscribers();
+
+          if (needsRemoteUpdate) {
+            this.syncConfigToFirestore(this.config);
+          }
         }
       } else {
         // Seed remote doc with current active configuration

@@ -20,7 +20,7 @@ export interface ChamberLocation {
   name: string;
   address: string;
   landmark?: string;
-  type: 'supreme' | 'saket' | 'panchsheel';
+  type: 'supreme' | 'saket' | 'panchsheel' | 'crpark' | 'chamber' | 'office' | 'also_at';
 }
 
 export interface GlossaryItem {
@@ -98,7 +98,7 @@ export const translations: Record<'EN' | 'HI', TranslationSchema & {
     heroTitle: "Advocate Arunabh Banerjee",
     heroTitlePrefix: "ADVOCATE",
     supremeCourtAdvocate: "SUPREME COURT ADVOCATE",
-    jurisdictionLine: "Hon'ble Supreme Court of India & Delhi High Court",
+    jurisdictionLine: "Supreme Court & High Court (All Courts & Tribunals)",
     humanRightsLine: "President – C.P.D.R India Human Rights, Delhi",
     contactBtn: "Schedule Consultation",
     legacyTitle: "A Legacy of Legal Excellence",
@@ -200,20 +200,20 @@ export const translations: Record<'EN' | 'HI', TranslationSchema & {
     glossarySub: "Simplifying legal definitions in Hindi and English simultaneously for citizens.",
     chambers: [
       {
-        name: "Supreme Court Chamber",
-        address: "Chamber No. 25, Old Lawyers Block, Supreme Court of India, New Delhi – 110001",
-        landmark: "Hon'ble Supreme Court Compound",
-        type: "supreme"
-      },
-      {
-        name: "Saket Courts Chamber",
-        address: "632, Lawyers Block, Saket Courts Complex, New Delhi – 110017",
-        landmark: "Saket Institutional Area",
+        name: "Chamber",
+        address: "632, Lawyer's Block, Saket Courts Complex, New Delhi 110017",
+        landmark: "Lawyer's Block, Saket Courts",
         type: "saket"
       },
       {
-        name: "Panchsheel Enclave Office",
-        address: "C-81, UGF, Panchsheel Enclave, New Delhi – 110017",
+        name: "Office",
+        address: "M-18, Ground Floor, CR Park, New Delhi - 110019",
+        landmark: "Chittaranjan Park, Ground Floor",
+        type: "crpark"
+      },
+      {
+        name: "Also at",
+        address: "C-81, UGF, Panchsheel Enclave, New Delhi 110017",
         landmark: "Near Outer Ring Road / S-Block Corner",
         type: "panchsheel"
       }
@@ -240,7 +240,7 @@ export const translations: Record<'EN' | 'HI', TranslationSchema & {
     heroTitle: "अधिवक्ता अरुणभ बनर्जी",
     heroTitlePrefix: "अधिवक्ता",
     supremeCourtAdvocate: "उच्चतम न्यायालय अधिवक्ता",
-    jurisdictionLine: "माननीय भारत का उच्चतम न्यायालय और दिल्ली उच्च न्यायालय",
+    jurisdictionLine: "सुप्रीम कोर्ट एवं हाई कोर्ट (समस्त न्यायालय व अधिकरण)",
     humanRightsLine: "अध्यक्ष - सी.पी.डी.आर इंडिया मानवाधिकार, दिल्ली",
     contactBtn: "परामर्श के लिए समय आरक्षित करें",
     legacyTitle: "कानूनी उत्कृष्टता की एक विरासत",
@@ -342,20 +342,20 @@ export const translations: Record<'EN' | 'HI', TranslationSchema & {
     glossarySub: "आम नागरिकों के लिए अंग्रेजी और हिंदी भाषा में महत्वपूर्ण कानूनी अर्थों की आसान समझ।",
     chambers: [
       {
-        name: "उच्चतम न्यायालय चैंबर",
-        address: "चेंबर नंबर 25, ओल्ड लॉयर्स ब्लॉक, भारत का उच्चतम न्यायालय, नई दिल्ली - 110001",
-        landmark: "माननीय सुप्रीम कोर्ट परिसर के भीतर",
-        type: "supreme"
-      },
-      {
-        name: "साकेत जिला न्यायालय चैंबर",
-        address: "632, लॉयर्स ब्लॉक, साकेत कोर्ट कॉम्प्लेक्स, नई दिल्ली - 110017",
-        landmark: "साकेत कोर्ट संस्थागत क्षेत्र",
+        name: "चैंबर (Chamber)",
+        address: "632, लॉयर्स ब्लॉक, साकेत कोर्ट कॉम्प्लेक्स, नई दिल्ली 110017",
+        landmark: "साकेत कोर्ट्स संस्थागत क्षेत्र",
         type: "saket"
       },
       {
-        name: "पंचशील एन्क्लेव मुख्य कार्यालय",
-        address: "सी-81, यूजीएफ, पंचशील एन्क्लेव, नई दिल्ली - 110017",
+        name: "कार्यालय (Office)",
+        address: "एम-18, ग्राउंड फ्लोर, सी.आर. पार्क, नई दिल्ली - 110019",
+        landmark: "चित्तरंजन पार्क, ग्राउंड फ्लोर",
+        type: "crpark"
+      },
+      {
+        name: "अतिरिक्त कार्यालय (Also at)",
+        address: "सी-81, यूजीएफ, पंचशील एन्क्लेव, नई दिल्ली 110017",
         landmark: "आउटर रिंग रोड के पास / एस-ब्लॉक किनारा",
         type: "panchsheel"
       }
